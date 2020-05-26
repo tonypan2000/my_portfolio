@@ -32,7 +32,7 @@ function addRandomGreeting() {
  */
 function addRandomFact() {
   const facts =
-      ['I like robotics', "I'm interested in Machine Learning"];
+      ['I like robotics', "I'm interested in Machine Learning", 'My birthday is on June 28th'];
 
   // Pick a random fact.
   const fact = facts[Math.floor(Math.random() * facts.length)];
