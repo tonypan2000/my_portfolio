@@ -8,13 +8,39 @@
   </head>
   <body>
     <div id="content">
-      <h1>Tony Pan's Portfolio</h1>
-      <p>This is my portfolio.</p>
-      <p>Click here to get a random message:</p>
-      <button onclick="addRandomGreeting()">Hello</button>
-      <div id="greeting-container"></div>
-      <p>Here is a photo of me hiking </p>
-      <img src="/images/hiking_volcano.jpg" alt="Tony's hiking photo" style="width: 45%;">
+        <!-- Header !-->
+        <h1>Tony Pan's Portfolio</h1>
+        <p>This is my portfolio.</p>
+
+        <!-- Random Greetings !-->
+        <p>Click here to get a random message:</p>
+        <button onclick="addRandomGreeting()">Hello</button>
+        <div id="greeting-container"></div>
+
+        <!-- Profile pic !-->
+        <p>Here is a photo of me hiking </p>
+        <img src="/images/hiking_volcano.jpg" alt="Tony's hiking photo" style="width: 45%;">
+
+        <!-- My background/intro !-->
+        <h2>My Background</h2>
+        <p>My name is Tony Pan. I am a <a href="https://buildyourfuture.withgoogle.com/programs/step/" target="_blank">STEP intern</a> at <a href="https://careers.google.com/" target="_blank">Google</a> in summer 2020.</p>
+
+        <!-- Social links !-->
+        <h2>Connect with me!</h2>
+        <P>
+            <a href="https://www.linkedin.com/in/tony-pan/" target="_blank" title="Linkedin"><img id="icon" src="/icons/linkedin_icon.png" alt="My Linkedin"></a>
+            <a href="https://github.com/tonypan2000" target="_blank" title="Github"><img id="icon" src="/icons/github_icon.jpeg" alt="My Github"></a>
+            <a href="https://www.instagram.com/tonypan2000/" target="_blank" title="Instagram"><img id="icon" src="/icons/insta_icon.png" alt="My Instagram"></a>
+            <a href="https://twitter.com/tonypan2000" target="_blank" title="Twitter"><img id="icon" src="/icons/twitter_icon.png" alt="My Twitter"></a>
+            <a href="https://www.facebook.com/tonypan2000" target="_blank" title="Facebook"><img id="icon" src="/icons/facebook_icon.png" alt="My Facebook"></a>
+            <a href="https://www.youtube.com/channel/UCp-751qVxozwSihorCI6iNw" target="_blank" title="Youtube"><img id="icon" src="/icons/youtube_icon.png" alt="My YouTube"></a>
+        </p>
+
+        <!-- Random facts about me !-->
+        <p>Click here to learn a random fun fact about me:</p>
+        <button onclick="addRandomFact()">Fun Fact</button>
+        <div id="fact-container"></div>
+        
     </div>
   </body>
 </html>

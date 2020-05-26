@@ -7,3 +7,12 @@
 #greeting-container {
   margin-top: 20px;
 }
+
+#fact-container {
+  margin-top: 20px;
+}
+
+#icon {
+    height: 30px;
+    width: 30px;
+}
