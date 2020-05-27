@@ -42,3 +42,49 @@ function addRandomFact() {
   const factContainer = document.getElementById('fact-container');
   factContainer.innerText = fact;
 }
+
+/**
+ * Fetches the greeting from the server and adds it to the DOM.
+ */
+ function getGreeting() {
+     console.log('Fetching the greeting message.');
+     const responsePromise = fetch('/data');
+     responsePromise.then(handleResponse);
+ }
+
+ /**
+  * Handles response by converting it to text and passing the result to 
+  * addGreatingToDom().
+  */
+  function handleResponse(response) {
+      console.log('Handling the response.');
+      const textPromise = response.text();
+      textPromise.then(addGreetingToDom);
+  }
+
+  /**
+   * Adds the greeting message to the DOM.
+   */
+   function addGreetingToDom(greeting) {
+       console.log('Adding greeting to dom: ' + greeting);
+       const greetingContainer = document.getElementById('greeting-container');
+       greetingContainer.innerText = greeting;
+   }
+
+/**
+ * Fetches the greeting from the server and adds it to the DOM using arrow function.
+ */
+ function getGreetingArrow() {
+     fetch('/data').then(response => response.text()).then((greeting) => {
+         document.getElementById('greeting-container').innerText = greeting;
+     });
+ }
+
+ /**
+ * Fetches the greeting from the server and adds it to the DOM using async await.
+ */
+ async function getGreetingAwait() {
+     const response = await fetch('/data');
+     const greeting = await response.text();
+     document.getElementById('greeting-container').innerText = greeting;
+ }
