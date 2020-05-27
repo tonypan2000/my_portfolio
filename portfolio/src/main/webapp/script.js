@@ -17,7 +17,7 @@
  */
 function addRandomGreeting() {
   const greetings =
-      ['Hello world!', 'Can you prove to me that you have consciousness?', 'I am Iron Man'];
+      ['Hello world!', 'Can you prove to me that you have consciousness?', 'I am Iron Man.'];
 
   // Pick a random greeting.
   const greeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -32,7 +32,8 @@ function addRandomGreeting() {
  */
 function addRandomFact() {
   const facts =
-      ['I like robotics', "I'm interested in Machine Learning", 'My birthday is on June 28th'];
+      ['I like robotics', "I'm interested in Machine Learning", 'My birthday is on June 28th', 
+        "I still haven't received my Noogler hat"];
 
   // Pick a random fact.
   const fact = facts[Math.floor(Math.random() * facts.length)];
