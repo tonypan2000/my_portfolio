@@ -17,14 +17,14 @@
     </script>
   </head>
   
-  <body>
+  <body onload="getComments()">
     <div id="content">
         <!-- Header !-->
         <h1>Tony Pan's Portfolio</h1>
 
         <!-- Random Greetings !-->
         <p>Click here to receive my greeting:</p>
-        <button onclick="getGreetingJson()">Hello</button>
+        <button onclick="addRandomGreeting()">Hello</button>
         <div id="greeting-container"></div>
 
         <!-- Profile pic !-->
@@ -126,6 +126,21 @@
         <p>Click here to learn a random fun fact about me:</p>
         <button onclick="addRandomFact()">Fun Fact</button>
         <div id="fact-container"></div> 
+
+        <!-- Form for comments !-->
+        <form action="/data" method="POST">
+            <h2>Comments?</h2>
+            <label for="name">Your name:</label>
+            <!-- TODO: Check for min length of entries (in Javascript) and warn user !-->
+            <input type="text" id="name" name="name-input" minlength="1" />
+            <br><br>
+            <textarea id="comments" name="comment-input" minlength="1"></textarea>
+            <br><br>
+            <input type="submit" />
+        </form>
+
+        <!-- Displays all previously entered comments !-->
+        <ul id="previous_comments"></ul>
     </div>
   </body>
 </html>

@@ -46,30 +46,30 @@ function addRandomFact() {
 /**
  * Fetches the greeting from the server and adds it to the DOM.
  */
- function getGreeting() {
-     console.log('Fetching the greeting message.');
-     const responsePromise = fetch('/data');
-     responsePromise.then(handleResponse);
- }
+function getGreeting() {
+    console.log('Fetching the greeting message.');
+    const responsePromise = fetch('/data');
+    responsePromise.then(handleResponse);
+}
 
- /**
-  * Handles response by converting it to text and passing the result to 
-  * addGreatingToDom().
-  */
-  function handleResponse(response) {
-      console.log('Handling the response.');
-      const textPromise = response.text();
-      textPromise.then(addGreetingToDom);
-  }
+/**
+ * Handles response by converting it to text and passing the result to 
+ * addGreatingToDom().
+ */
+function handleResponse(response) {
+    console.log('Handling the response.');
+    const textPromise = response.text();
+    textPromise.then(addGreetingToDom);
+}
 
-  /**
-   * Adds the greeting message to the DOM.
-   */
-   function addGreetingToDom(greeting) {
-       console.log('Adding greeting to dom: ' + greeting);
-       const greetingContainer = document.getElementById('greeting-container');
-       greetingContainer.innerText = greeting;
-   }
+/**
+ * Adds the greeting message to the DOM.
+ */
+function addGreetingToDom(greeting) {
+    console.log('Adding greeting to dom: ' + greeting);
+    const greetingContainer = document.getElementById('greeting-container');
+    greetingContainer.innerText = greeting;
+}
 
 /**
  * Fetches the greeting from the server and adds it to the DOM using arrow function.
@@ -80,24 +80,49 @@ function addRandomFact() {
      });
  }
 
- /**
-  * Fetches the greeting from the server and adds it to the DOM using async await.
-  */
- async function getGreetingAwait() {
-     const response = await fetch('/data');
-     const greeting = await response.text();
-     document.getElementById('greeting-container').innerText = greeting;
- }
+/**
+ * Fetches the greeting from the server and adds it to the DOM using async await.
+ */
+async function getGreetingAwait() {
+    const response = await fetch('/data');
+    const greeting = await response.text();
+    document.getElementById('greeting-container').innerText = greeting;
+}
 
- /**
-  * Fetches the greeting from the server and adds a randomly selected one
-  * to the DOM in JSON String format with the arrow function.
-  */
-  function getGreetingJson() {
-      fetch('/data').then(response => response.json()).then((greetings) => {
-          // Pick a random greeting.
-          const greeting = greetings[Math.floor(Math.random() * greetings.length)];
-          // Add it to the page.
-          document.getElementById('greeting-container').innerText = greeting;
-      });
+/**
+ * Fetches the greeting from the server and adds a randomly selected one
+ * to the DOM in JSON String format with the arrow function.
+ */
+function getGreetingJson() {
+    fetch('/data').then(response => response.json()).then(input => {
+        // Pick a random greeting.
+        const greeting = input.greetings[Math.floor(Math.random() * input.greetings.length)];
+        // Add it to the page.
+        document.getElementById('greeting-container').innerText = greeting;
+    });
+}
+
+/**
+ * Fetches all of the previous comments made by users and 
+ * displays it below the input comment form
+ */
+async function getComments() {
+    console.log('Fetching the greeting message.');
+    const response = await fetch('/data');
+    console.log('Handling the response.');
+    const text = await response.json();
+    console.log('/data: ' + text);
+    const commentsContainer = document.getElementById('previous_comments-container');
+    // TODO: display comments in DOM
+    // text.name.forEach(entry => {
+    //     greetingContainer.appendChild(createListElement(entry));
+    //     console.log('Adding comment to dom: ' + entry);
+    // });
+}
+   
+   /** Creates an <li> element containing text. */
+  function createListElement(text) {
+      const liElement = document.createElement('li');
+      liElement.innerText = text;
+      return liElement;
   }
