@@ -107,11 +107,11 @@ function getGreetingJson() {
  * Fetches all of the previous comments made by users and 
  * displays it below the input comment form
  */
-async function getComments() {
+function getComments() {
   fetch('/data').then(response => response.json()).then(text => {
     const commentsContainer = document.getElementById('previous-comments');
     text.forEach(entry => {
-      commentsContainer.appendChild(createListElement(entry));
+      commentsContainer.appendChild(createListElementForComment(entry));
     });
   });
 }
@@ -119,7 +119,7 @@ async function getComments() {
 /**
  * Creates an <li> element containing comment entries. 
  */
-function createListElement(entry) {
+function createListElementForComment(entry) {
   const liElement = document.createElement('li');
   const nameElement = document.createElement('h4');
   nameElement.innerText = 'Posted by: ' + entry.name;
@@ -130,6 +130,15 @@ function createListElement(entry) {
   const commentElement = document.createElement('p');
   commentElement.innerText = entry.content;
   liElement.appendChild(commentElement);
+  const deleteButtonElement = document.createElement('button');
+  deleteButtonElement.innerText = 'Delete';
+  deleteButtonElement.addEventListener('click', () => {
+    deleteComment(entry);
+
+    // Remove the comment from the DOM.
+    refreshComments();
+  })
+  liElement.appendChild(deleteButtonElement);
   return liElement;
 }
 
@@ -140,4 +149,44 @@ function createListElement(entry) {
 function epochToLocale(epoch) {
   const time = new Date(epoch);
   return time.toLocaleString();
+}
+
+/**
+ * After user changes the max num of comments to display
+ * refreshes the comment section
+ */
+function refreshComments() {
+  // remove previous comments
+  var previousComments = document.getElementById('previous-comments');
+  while (previousComments.firstChild) {
+    previousComments.removeChild(previousComments.firstChild);
+  }
+  // read user input value
+  var maxNumComments = document.getElementById('max-num-comments').value;
+  // encode user input parameter as a query string embedded in the URL
+  var queryUrl = updateQueryString('max-num-comments', maxNumComments);
+  // fetch from Datastroe and repopulate comment section
+  fetch('/data?' + queryUrl).then(response => response.json()).then(text => {
+    const commentsContainer = document.getElementById('previous-comments');
+    text.forEach(entry => {
+      commentsContainer.appendChild(createListElementForComment(entry));
+    });
+  });
+}
+
+/**
+ * Returns an updated URL search param
+ */
+function updateQueryString(key, value) {
+  var searchParams = new URLSearchParams();
+  searchParams.append(key, value);
+  return searchParams;
+}
+
+/**
+ * Deletes a chosen comment from Datastore, 
+ */
+function deleteComment(comment) {
+  const params = updateQueryString('id', comment.id)
+  fetch('/delete-data', {method: 'POST', body: params});
 }

@@ -15,9 +15,22 @@
       gtag('js', new Date());
       gtag('config', 'UA-105323938-4');
     </script>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-56HP3B7');</script>
+    <!-- End Google Tag Manager -->
   </head>
   
   <body onload="getComments()">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-56HP3B7"
+        height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
     <div id="content">
       <!-- Header !-->
       <h1>Tony Pan's Portfolio</h1>
@@ -129,7 +142,7 @@
       <div id="fact-container"></div> 
 
       <!-- Form for comments !-->
-      <form action="/data" method="POST">
+      <form action="/data" method="POST" id="post-event">
         <h2>Post Your Comment!</h2>
         <label for="name">Your name:</label>
         <!-- TODO: Check for min length of entries (in Javascript) and warn user !-->
@@ -142,6 +155,10 @@
 
       <!-- Displays all previously entered comments !-->
       <h2>Previous Comments</h2>
+      <p>Max Number of Comments:</p>
+      <input type="number" id="max-num-comments" name="max-num-comments" min="0" value="5">
+      <button onclick="refreshComments()">Set</button>
+      <br><br>
       <ul id="previous-comments"></ul>
     </div>
   </body>
