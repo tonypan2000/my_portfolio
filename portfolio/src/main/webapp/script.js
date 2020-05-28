@@ -17,7 +17,8 @@
  */
 function addRandomGreeting() {
   const greetings =
-      ['Hello world!', 'Can you prove to me that you have consciousness?', 'I am Iron Man.'];
+    ['Hello world!', 'Can you prove to me that you have consciousness?', 'I am Iron Man.',
+      'Occupy Mars', 'Nuke Mars'];
 
   // Pick a random greeting.
   const greeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -32,8 +33,8 @@ function addRandomGreeting() {
  */
 function addRandomFact() {
   const facts =
-      ['I like robotics', "I'm interested in Machine Learning", 'My birthday is on June 28th', 
-        "I still haven't received my Noogler hat"];
+    ['I like robotics', "I'm interested in Machine Learning", 'My birthday is on June 28th', 
+      "I still haven't received my Noogler hat", 'I have the same birthday as Elon Musk.'];
 
   // Pick a random fact.
   const fact = facts[Math.floor(Math.random() * facts.length)];
@@ -47,9 +48,9 @@ function addRandomFact() {
  * Fetches the greeting from the server and adds it to the DOM.
  */
 function getGreeting() {
-    console.log('Fetching the greeting message.');
-    const responsePromise = fetch('/data');
-    responsePromise.then(handleResponse);
+  console.log('Fetching the greeting message.');
+  const responsePromise = fetch('/data');
+  responsePromise.then(handleResponse);
 }
 
 /**
@@ -57,36 +58,36 @@ function getGreeting() {
  * addGreatingToDom().
  */
 function handleResponse(response) {
-    console.log('Handling the response.');
-    const textPromise = response.text();
-    textPromise.then(addGreetingToDom);
+  console.log('Handling the response.');
+  const textPromise = response.text();
+  textPromise.then(addGreetingToDom);
 }
 
 /**
  * Adds the greeting message to the DOM.
  */
 function addGreetingToDom(greeting) {
-    console.log('Adding greeting to dom: ' + greeting);
-    const greetingContainer = document.getElementById('greeting-container');
-    greetingContainer.innerText = greeting;
+  console.log('Adding greeting to dom: ' + greeting);
+  const greetingContainer = document.getElementById('greeting-container');
+  greetingContainer.innerText = greeting;
 }
 
 /**
  * Fetches the greeting from the server and adds it to the DOM using arrow function.
  */
- function getGreetingArrow() {
-     fetch('/data').then(response => response.text()).then(greeting => {
-         document.getElementById('greeting-container').innerText = greeting;
-     });
- }
+function getGreetingArrow() {
+  fetch('/data').then(response => response.text()).then(greeting => {
+    document.getElementById('greeting-container').innerText = greeting;
+  });
+}
 
 /**
  * Fetches the greeting from the server and adds it to the DOM using async await.
  */
 async function getGreetingAwait() {
-    const response = await fetch('/data');
-    const greeting = await response.text();
-    document.getElementById('greeting-container').innerText = greeting;
+  const response = await fetch('/data');
+  const greeting = await response.text();
+  document.getElementById('greeting-container').innerText = greeting;
 }
 
 /**
@@ -94,12 +95,12 @@ async function getGreetingAwait() {
  * to the DOM in JSON String format with the arrow function.
  */
 function getGreetingJson() {
-    fetch('/data').then(response => response.json()).then(input => {
-        // Pick a random greeting.
-        const greeting = input.greetings[Math.floor(Math.random() * input.greetings.length)];
-        // Add it to the page.
-        document.getElementById('greeting-container').innerText = greeting;
-    });
+  fetch('/data').then(response => response.json()).then(input => {
+    // Pick a random greeting.
+    const greeting = input.greetings[Math.floor(Math.random() * input.greetings.length)];
+    // Add it to the page.
+    document.getElementById('greeting-container').innerText = greeting;
+  });
 }
 
 /**
@@ -107,22 +108,20 @@ function getGreetingJson() {
  * displays it below the input comment form
  */
 async function getComments() {
-    console.log('Fetching the greeting message.');
-    const response = await fetch('/data');
-    console.log('Handling the response.');
-    const text = await response.json();
-    console.log('/data: ' + text);
-    const commentsContainer = document.getElementById('previous_comments-container');
-    // TODO: display comments in DOM
-    // text.name.forEach(entry => {
-    //     greetingContainer.appendChild(createListElement(entry));
-    //     console.log('Adding comment to dom: ' + entry);
-    // });
+  console.log('Fetching the greeting message.');
+  const response = await fetch('/data');
+  console.log('Handling the response.');
+  const text = await response.json();
+  console.log('/data: ' + text);
+  const commentsContainer = document.getElementById('previous_comments-container');
+  // TODO: display comments in DOM
 }
    
-   /** Creates an <li> element containing text. */
-  function createListElement(text) {
-      const liElement = document.createElement('li');
-      liElement.innerText = text;
-      return liElement;
-  }
+/**
+ * Creates an <li> element containing text. 
+ */
+function createListElement(text) {
+  const liElement = document.createElement('li');
+  liElement.innerText = text;
+  return liElement;
+}
