@@ -75,16 +75,29 @@ function addRandomFact() {
  * Fetches the greeting from the server and adds it to the DOM using arrow function.
  */
  function getGreetingArrow() {
-     fetch('/data').then(response => response.text()).then((greeting) => {
+     fetch('/data').then(response => response.text()).then(greeting => {
          document.getElementById('greeting-container').innerText = greeting;
      });
  }
 
  /**
- * Fetches the greeting from the server and adds it to the DOM using async await.
- */
+  * Fetches the greeting from the server and adds it to the DOM using async await.
+  */
  async function getGreetingAwait() {
      const response = await fetch('/data');
      const greeting = await response.text();
      document.getElementById('greeting-container').innerText = greeting;
  }
+
+ /**
+  * Fetches the greeting from the server and adds a randomly selected one
+  * to the DOM in JSON String format with the arrow function.
+  */
+  function getGreetingJson() {
+      fetch('/data').then(response => response.json()).then((greetings) => {
+          // Pick a random greeting.
+          const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+          // Add it to the page.
+          document.getElementById('greeting-container').innerText = greeting;
+      });
+  }

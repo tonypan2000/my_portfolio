@@ -14,7 +14,9 @@
 
 package com.google.sps.servlets;
 
+import com.google.gson.Gson;
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -24,9 +26,36 @@ import javax.servlet.http.HttpServletResponse;
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
 
+    // hard coded greeting messages
+    private ArrayList<String> greetings;
+
+    @Override
+    public void init() {
+        greetings = new ArrayList<>();
+        greetings.add("Hello world!");
+        greetings.add("I have the same birthday as Elon Mustk.");
+        greetings.add("Occupy Mars");
+        greetings.add("Nuke Mars");
+    }
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.setContentType("text/html;");
-    response.getWriter().println("Hello from Tony Pan!");
+    // response.setContentType("text/html;");
+    // response.getWriter().println("Hello from Tony Pan!");
+
+    // Convert the server stats to JSON
+    String json = convertToJsonWithGson(greetings);
+    // Send the JSON as the response
+    response.setContentType("application/json;");
+    response.getWriter().println(json);
+  }
+
+  /**
+   * Converts an ArrayList of Strings into a JSON String using the Gson library
+   */
+  private String convertToJsonWithGson(ArrayList<String> inputText) {
+      Gson gson = new Gson();
+      String json = gson.toJson(inputText);
+      return json;
   }
 }
