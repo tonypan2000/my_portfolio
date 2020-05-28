@@ -12,7 +12,16 @@
   margin-top: 20px;
 }
 
-#icon {
-    height: 30px;
-    width: 30px;
+#icon1, #icon2, #icon3, #icon4, #icon5, #icon6 {
+  height: 30px;
+  width: 30px;
+}
+
+#comment-form {
+  width: 650px;
+  height: 150px;
+}
+
+#previous-comments {
+  list-style-type: none;
 }

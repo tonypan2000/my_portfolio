@@ -17,7 +17,8 @@
  */
 function addRandomGreeting() {
   const greetings =
-      ['Hello world!', 'Can you prove to me that you have consciousness?', 'I am Iron Man.'];
+    ['Hello world!', 'Can you prove to me that you have consciousness?', 'I am Iron Man.',
+      'Occupy Mars', 'Nuke Mars'];
 
   // Pick a random greeting.
   const greeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -32,8 +33,8 @@ function addRandomGreeting() {
  */
 function addRandomFact() {
   const facts =
-      ['I like robotics', "I'm interested in Machine Learning", 'My birthday is on June 28th', 
-        "I still haven't received my Noogler hat"];
+    ['I like robotics', "I'm interested in Machine Learning", 'My birthday is on June 28th', 
+      "I still haven't received my Noogler hat", 'I have the same birthday as Elon Musk.'];
 
   // Pick a random fact.
   const fact = facts[Math.floor(Math.random() * facts.length)];
@@ -41,4 +42,102 @@ function addRandomFact() {
   // Add it to the page.
   const factContainer = document.getElementById('fact-container');
   factContainer.innerText = fact;
+}
+
+/**
+ * Fetches the greeting from the server and adds it to the DOM.
+ */
+function getGreeting() {
+  console.log('Fetching the greeting message.');
+  const responsePromise = fetch('/data');
+  responsePromise.then(handleResponse);
+}
+
+/**
+ * Handles response by converting it to text and passing the result to 
+ * addGreatingToDom().
+ */
+function handleResponse(response) {
+  console.log('Handling the response.');
+  const textPromise = response.text();
+  textPromise.then(addGreetingToDom);
+}
+
+/**
+ * Adds the greeting message to the DOM.
+ */
+function addGreetingToDom(greeting) {
+  console.log('Adding greeting to dom: ' + greeting);
+  const greetingContainer = document.getElementById('greeting-container');
+  greetingContainer.innerText = greeting;
+}
+
+/**
+ * Fetches the greeting from the server and adds it to the DOM using arrow function.
+ */
+function getGreetingArrow() {
+  fetch('/data').then(response => response.text()).then(greeting => {
+    document.getElementById('greeting-container').innerText = greeting;
+  });
+}
+
+/**
+ * Fetches the greeting from the server and adds it to the DOM using async await.
+ */
+async function getGreetingAwait() {
+  const response = await fetch('/data');
+  const greeting = await response.text();
+  document.getElementById('greeting-container').innerText = greeting;
+}
+
+/**
+ * Fetches the greeting from the server and adds a randomly selected one
+ * to the DOM in JSON String format with the arrow function.
+ */
+function getGreetingJson() {
+  fetch('/data').then(response => response.json()).then(input => {
+    // Pick a random greeting.
+    const greeting = input.greetings[Math.floor(Math.random() * input.greetings.length)];
+    // Add it to the page.
+    document.getElementById('greeting-container').innerText = greeting;
+  });
+}
+
+/**
+ * Fetches all of the previous comments made by users and 
+ * displays it below the input comment form
+ */
+async function getComments() {
+  fetch('/data').then(response => response.json()).then(text => {
+    const commentsContainer = document.getElementById('previous-comments');
+    text.forEach(entry => {
+      commentsContainer.appendChild(createListElement(entry));
+    });
+  });
+}
+   
+/**
+ * Creates an <li> element containing comment entries. 
+ */
+function createListElement(entry) {
+  const liElement = document.createElement('li');
+  const nameElement = document.createElement('h4');
+  nameElement.innerText = 'Posted by: ' + entry.name;
+  liElement.appendChild(nameElement);
+  const dateElement = document.createElement('p');
+  dateElement.innerText = epochToLocale(entry.timestamp);
+  liElement.appendChild(dateElement);
+  const commentElement = document.createElement('p');
+  commentElement.innerText = entry.content;
+  liElement.appendChild(commentElement);
+  return liElement;
+}
+
+/**
+ * Converts a timezone-agnostic timestamp epoch milliseconds
+ * to a Date displaying in local time zone
+ */
+function epochToLocale(epoch) {
+  const time = new Date(epoch);
+  return time.toLocaleString();
 }

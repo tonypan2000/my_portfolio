@@ -14,19 +14,108 @@
 
 package com.google.sps.servlets;
 
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.gson.Gson;
 import java.io.IOException;
+import java.lang.Long;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.format.DateTimeFormatter;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-/** Servlet that returns some example content. TODO: modify this file to handle comments data */
+/** Servlet that returns some example content. This file handles comment data */
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
+  
+  private class Comment {
+    String name;
+    Long timestamp;
+    String content;
+
+    private Comment(String nameInput, Long timestampInput, String contentInput) {
+      name = nameInput;
+      timestamp = timestampInput;
+      content = contentInput;
+    }
+  }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.setContentType("text/html;");
-    response.getWriter().println("<h1>Hello Tony Pan!</h1>");
+    Query query = new Query("Comment").addSort("timestamp", SortDirection.DESCENDING);
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    PreparedQuery results = datastore.prepare(query);
+
+    List<Comment> comments = new ArrayList<>();
+    for (Entity entity : results.asIterable()) {
+      String name = (String) entity.getProperty("name");
+      Long timestamp = ((Number) entity.getProperty("timestamp")).longValue();
+      String content = (String) entity.getProperty("content");
+
+      Comment comment = new Comment(name, timestamp, content);
+      comments.add(comment);
+    }
+
+    Gson gson = new Gson();
+
+    // Send the JSON as the response
+    response.setContentType("application/json;");
+    response.getWriter().println(gson.toJson(comments));
+  }
+
+  @Override
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // Get the name and comment from the post request
+    String name = getParam(request, "name-input", "");
+    String comment = getParam(request, "comment-input", "");
+
+    // TODO: a more elegant way of error checking/notifying user 
+    if (name.isEmpty()) {
+      response.setContentType("text/html");
+      response.getWriter().println("Please enter a valid name.");
+      return;
+    } else if (comment.isEmpty()) {
+      response.setContentType("text/html");
+      response.getWriter().println("Please enter a valid comment.");
+      return;
+    } 
+
+    // get the current timestamp
+    Instant currentTime = Instant.now();
+    long currentTimeEpoch = currentTime.toEpochMilli();
+    // TODO: look into if two instances of comments are posted at the same milisecond
+
+    Entity commentEntity = new Entity("Comment");
+    commentEntity.setProperty("name", name);
+    commentEntity.setProperty("timestamp", currentTimeEpoch);
+    commentEntity.setProperty("content", comment);
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    datastore.put(commentEntity);
+    
+    // Redirect back to the HTML page.
+    response.sendRedirect("/index.html");
+  }
+
+  /**
+   * @return the request parameter, or the default value if the parameter
+   *         was not specified by the client
+   */
+  private String getParam(HttpServletRequest request, String name, String defaultValue) {
+    String value = request.getParameter(name);
+    if (value == null) {
+      return defaultValue;
+    }
+    return value;
   }
 }
