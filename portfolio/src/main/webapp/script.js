@@ -108,14 +108,11 @@ function getGreetingJson() {
  * displays it below the input comment form
  */
 async function getComments() {
-  console.log('Fetching the greeting message.');
-  const response = await fetch('/data');
-  console.log('Handling the response.');
-  const text = await response.json();
-  console.log('/data: ' + text);
-  const commentsContainer = document.getElementById('previous-comments');
-  text.forEach(entry => {
-    commentsContainer.appendChild(createListElement(entry));
+  fetch('/data').then(response => response.json()).then(text => {
+    const commentsContainer = document.getElementById('previous-comments');
+    text.forEach(entry => {
+      commentsContainer.appendChild(createListElement(entry));
+    });
   });
 }
    
