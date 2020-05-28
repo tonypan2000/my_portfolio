@@ -22,11 +22,13 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.lang.Long;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.format.DateTimeFormatter;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,10 +39,10 @@ public class DataServlet extends HttpServlet {
   
   private class Comment {
     String name;
-    String timestamp;
+    Long timestamp;
     String content;
 
-    private Comment(String nameInput, String timestampInput, String contentInput) {
+    private Comment(String nameInput, Long timestampInput, String contentInput) {
       name = nameInput;
       timestamp = timestampInput;
       content = contentInput;
@@ -56,12 +58,12 @@ public class DataServlet extends HttpServlet {
 
     List<Comment> comments = new ArrayList<>();
     for (Entity entity : results.asIterable()) {
-        String name = (String) entity.getProperty("name");
-        String timestamp = (String) entity.getProperty("timestamp");
-        String content = (String) entity.getProperty("content");
+      String name = (String) entity.getProperty("name");
+      Long timestamp = ((Number) entity.getProperty("timestamp")).longValue();
+      String content = (String) entity.getProperty("content");
 
-        Comment comment = new Comment(name, timestamp, content);
-        comments.add(comment);
+      Comment comment = new Comment(name, timestamp, content);
+      comments.add(comment);
     }
 
     Gson gson = new Gson();
@@ -89,13 +91,13 @@ public class DataServlet extends HttpServlet {
     } 
 
     // get the current timestamp
-    LocalDateTime currentDate = LocalDateTime.now();
-    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
-    String timestamp = currentDate.format(dateFormatter);
+    Instant currentTime = Instant.now();
+    long currentTimeEpoch = currentTime.toEpochMilli();
+    // TODO: look into if two instances of comments are posted at the same milisecond
 
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("name", name);
-    commentEntity.setProperty("timestamp", timestamp);
+    commentEntity.setProperty("timestamp", currentTimeEpoch);
     commentEntity.setProperty("content", comment);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();

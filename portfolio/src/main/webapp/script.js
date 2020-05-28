@@ -113,15 +113,34 @@ async function getComments() {
   console.log('Handling the response.');
   const text = await response.json();
   console.log('/data: ' + text);
-  const commentsContainer = document.getElementById('previous_comments-container');
-  // TODO: display comments in DOM
+  const commentsContainer = document.getElementById('previous-comments');
+  text.forEach(entry => {
+    commentsContainer.appendChild(createListElement(entry));
+  });
 }
    
 /**
- * Creates an <li> element containing text. 
+ * Creates an <li> element containing comment entries. 
  */
-function createListElement(text) {
+function createListElement(entry) {
   const liElement = document.createElement('li');
-  liElement.innerText = text;
+  const nameElement = document.createElement('h4');
+  nameElement.innerText = 'Posted by: ' + entry.name;
+  liElement.appendChild(nameElement);
+  const dateElement = document.createElement('p');
+  dateElement.innerText = epochToLocale(entry.timestamp);
+  liElement.appendChild(dateElement);
+  const commentElement = document.createElement('p');
+  commentElement.innerText = entry.content;
+  liElement.appendChild(commentElement);
   return liElement;
+}
+
+/**
+ * Converts a timezone-agnostic timestamp epoch milliseconds
+ * to a Date displaying in local time zone
+ */
+function epochToLocale(epoch) {
+  const time = new Date(epoch);
+  return time.toLocaleString();
 }
