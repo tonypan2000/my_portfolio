@@ -17,6 +17,9 @@ package com.google.sps.servlets;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
@@ -37,32 +40,41 @@ import java.util.List;
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
   
-  private class Comment {
+  private static class Comment {
+    long id;
     String name;
     Long timestamp;
     String content;
 
-    private Comment(String nameInput, Long timestampInput, String contentInput) {
-      name = nameInput;
-      timestamp = timestampInput;
-      content = contentInput;
+    private Comment(long id, String name, Long timestamp, String content) {
+      this.id = idInput;
+      this.name = nameInput;
+      this.timestamp = timestampInput;
+      this.content = contentInput;
     }
   }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    // Get the max num comments from input
+    int maxNumComments = getMaxNumComments(request, 5);
+
     Query query = new Query("Comment").addSort("timestamp", SortDirection.DESCENDING);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    PreparedQuery results = datastore.prepare(query);
+    PreparedQuery preparedQuery = datastore.prepare(query);
+
+    // limits query preparedQuery to the user specified
+    List<Entity> entities = preparedQuery.asList(FetchOptions.Builder.withLimit(maxNumComments));
 
     List<Comment> comments = new ArrayList<>();
-    for (Entity entity : results.asIterable()) {
+    for (Entity entity : entities) {
+      long id = entity.getKey().getId();
       String name = (String) entity.getProperty("name");
       Long timestamp = ((Number) entity.getProperty("timestamp")).longValue();
       String content = (String) entity.getProperty("content");
 
-      Comment comment = new Comment(name, timestamp, content);
+      Comment comment = new Comment(id, name, timestamp, content);
       comments.add(comment);
     }
 
@@ -71,6 +83,31 @@ public class DataServlet extends HttpServlet {
     // Send the JSON as the response
     response.setContentType("application/json;");
     response.getWriter().println(gson.toJson(comments));
+  }
+
+  /**
+   * Returns the maximum number of comments the page should display
+   * as entered by the user, or a default value if the choice was invalid.
+   */
+  private int getMaxNumComments(HttpServletRequest request, int input) {    
+    // get the input from URL query String
+    String inputString = request.getParameter("max-num-comments");
+
+    // convert input from String to int
+    int maxNumInt = input;
+    try {
+      maxNumInt = Integer.parseInt(inputString);
+    } catch (NumberFormatException e) {
+      System.err.println("Could not convert " + inputString + " to int");
+      return input;
+    }
+
+    // check that the max num is a positive int
+    if (maxNumInt < 0) {
+      System.err.println("User input " + maxNumInt + " is out of range.");
+      return input;
+    }
+    return maxNumInt;
   }
 
   @Override
