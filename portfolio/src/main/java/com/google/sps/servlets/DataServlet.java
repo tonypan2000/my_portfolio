@@ -40,17 +40,17 @@ import java.util.List;
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
   
-  private class Comment {
+  private static class Comment {
     long id;
     String name;
     Long timestamp;
     String content;
 
-    private Comment(long idInput, String nameInput, Long timestampInput, String contentInput) {
-      id = idInput;
-      name = nameInput;
-      timestamp = timestampInput;
-      content = contentInput;
+    private Comment(long id, String name, Long timestamp, String content) {
+      this.id = idInput;
+      this.name = nameInput;
+      this.timestamp = timestampInput;
+      this.content = contentInput;
     }
   }
 
@@ -62,10 +62,10 @@ public class DataServlet extends HttpServlet {
     Query query = new Query("Comment").addSort("timestamp", SortDirection.DESCENDING);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    PreparedQuery results = datastore.prepare(query);
+    PreparedQuery preparedQuery = datastore.prepare(query);
 
-    // limits query results to the user specified
-    List<Entity> entities = results.asList(FetchOptions.Builder.withLimit(maxNumComments));
+    // limits query preparedQuery to the user specified
+    List<Entity> entities = preparedQuery.asList(FetchOptions.Builder.withLimit(maxNumComments));
 
     List<Comment> comments = new ArrayList<>();
     for (Entity entity : entities) {
