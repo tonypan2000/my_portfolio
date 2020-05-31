@@ -18,7 +18,9 @@
 function addRandomGreeting() {
   const greetings =
     ['Hello world!', 'Can you prove to me that you have consciousness?', 'I am Iron Man.',
-      'Occupy Mars', 'Nuke Mars'];
+      'Occupy Mars', 'Nuke Mars', 'I like robotics', "I'm interested in Machine Learning", 
+      'My birthday is on June 28th', 
+      "I still haven't received my Noogler hat", 'I have the same birthday as Elon Musk.'];
 
   // Pick a random greeting.
   const greeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -26,22 +28,6 @@ function addRandomGreeting() {
   // Add it to the page.
   const greetingContainer = document.getElementById('greeting-container');
   greetingContainer.innerText = greeting;
-}
-
-/**
- * Adds a random fun fact about me to the page.
- */
-function addRandomFact() {
-  const facts =
-    ['I like robotics', "I'm interested in Machine Learning", 'My birthday is on June 28th', 
-      "I still haven't received my Noogler hat", 'I have the same birthday as Elon Musk.'];
-
-  // Pick a random fact.
-  const fact = facts[Math.floor(Math.random() * facts.length)];
-
-  // Add it to the page.
-  const factContainer = document.getElementById('fact-container');
-  factContainer.innerText = fact;
 }
    
 /**
@@ -144,18 +130,30 @@ function getLoginStatus(id) {
   return fetch('/login-status').then(response => response.text()).then(link => {
     // if user is logged in, server sends the logout link
     if (link.includes('logout')) {
-      document.getElementById('post-event').style.visibility = 'visible';
+      document.getElementById('post-event').style.display = 'block';
       if (id === 'logout') {
         location.replace(link);
       } else if (id === 'delete') {
         return true;
       }
     } else {
-      document.getElementById('post-event').style.visibility = 'hidden';
+      document.getElementById('post-event').style.display = 'none';
       if (id === 'login') {
         location.replace(link);
       }
     }
     refreshComments();
   });
+}
+
+/**
+ * If the element is currently visible, change to hidden
+ * If it is hidden, show it
+ */
+function changeDisplayState(id) {
+  if (document.getElementById(id).style.display === 'block') {
+    document.getElementById(id).style.display = 'none';
+  } else {
+    document.getElementById(id).style.display = 'block';
+  }
 }
