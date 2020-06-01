@@ -23,6 +23,8 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.lang.Long;
@@ -47,10 +49,10 @@ public class DataServlet extends HttpServlet {
     String content;
 
     private Comment(long id, String name, Long timestamp, String content) {
-      this.id = idInput;
-      this.name = nameInput;
-      this.timestamp = timestampInput;
-      this.content = contentInput;
+      this.id = id;
+      this.name = name;
+      this.timestamp = timestamp;
+      this.content = content;
     }
   }
 
@@ -64,7 +66,7 @@ public class DataServlet extends HttpServlet {
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     PreparedQuery preparedQuery = datastore.prepare(query);
 
-    // limits query preparedQuery to the user specified
+    // limits preparedQuery to the user specified
     List<Entity> entities = preparedQuery.asList(FetchOptions.Builder.withLimit(maxNumComments));
 
     List<Comment> comments = new ArrayList<>();
@@ -112,36 +114,41 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // Get the name and comment from the post request
-    String name = getParam(request, "name-input", "");
-    String comment = getParam(request, "comment-input", "");
+    UserService userService = UserServiceFactory.getUserService();
+    if (userService.isUserLoggedIn()) {
+      // get email from userservice
+      String userEmail = userService.getCurrentUser().getEmail();
+      // Get the nickname and comment from the post request
+      String userName = getParam(request, "name-input", "");
+      String comment = getParam(request, "comment-input", "");
 
-    // TODO: a more elegant way of error checking/notifying user 
-    if (name.isEmpty()) {
-      response.setContentType("text/html");
-      response.getWriter().println("Please enter a valid name.");
-      return;
-    } else if (comment.isEmpty()) {
-      response.setContentType("text/html");
-      response.getWriter().println("Please enter a valid comment.");
-      return;
-    } 
+      if (userName.isEmpty()) {
+        userName = userEmail;
+      }
+      // TODO: a more elegant way of error checking/notifying user 
+      if (comment.isEmpty()) {
+        response.setContentType("text/html");
+        response.getWriter().println("Please enter a valid comment.");
+        return;
+      } 
 
-    // get the current timestamp
-    Instant currentTime = Instant.now();
-    long currentTimeEpoch = currentTime.toEpochMilli();
-    // TODO: look into if two instances of comments are posted at the same milisecond
+      // get the current timestamp
+      Instant currentTime = Instant.now();
+      long currentTimeEpoch = currentTime.toEpochMilli();
+      // TODO: look into if two instances of comments are posted at the same milisecond
 
-    Entity commentEntity = new Entity("Comment");
-    commentEntity.setProperty("name", name);
-    commentEntity.setProperty("timestamp", currentTimeEpoch);
-    commentEntity.setProperty("content", comment);
+      Entity commentEntity = new Entity("Comment");
+      commentEntity.setProperty("email", userEmail);
+      commentEntity.setProperty("name", userName);
+      commentEntity.setProperty("timestamp", currentTimeEpoch);
+      commentEntity.setProperty("content", comment);
 
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    datastore.put(commentEntity);
+      DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+      datastore.put(commentEntity);
     
-    // Redirect back to the HTML page.
-    response.sendRedirect("/index.html");
+      // Redirect back to the HTML page.
+      response.sendRedirect("/index.html");
+    }
   }
 
   /**

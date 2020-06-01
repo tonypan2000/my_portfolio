@@ -18,7 +18,9 @@
 function addRandomGreeting() {
   const greetings =
     ['Hello world!', 'Can you prove to me that you have consciousness?', 'I am Iron Man.',
-      'Occupy Mars', 'Nuke Mars'];
+      'Occupy Mars', 'Nuke Mars', 'I like robotics', "I'm interested in Machine Learning", 
+      'My birthday is on June 28th', 
+      "I still haven't received my Noogler hat", 'I have the same birthday as Elon Musk.'];
 
   // Pick a random greeting.
   const greeting = greetings[Math.floor(Math.random() * greetings.length)];
@@ -26,94 +28,6 @@ function addRandomGreeting() {
   // Add it to the page.
   const greetingContainer = document.getElementById('greeting-container');
   greetingContainer.innerText = greeting;
-}
-
-/**
- * Adds a random fun fact about me to the page.
- */
-function addRandomFact() {
-  const facts =
-    ['I like robotics', "I'm interested in Machine Learning", 'My birthday is on June 28th', 
-      "I still haven't received my Noogler hat", 'I have the same birthday as Elon Musk.'];
-
-  // Pick a random fact.
-  const fact = facts[Math.floor(Math.random() * facts.length)];
-
-  // Add it to the page.
-  const factContainer = document.getElementById('fact-container');
-  factContainer.innerText = fact;
-}
-
-/**
- * Fetches the greeting from the server and adds it to the DOM.
- */
-function getGreeting() {
-  console.log('Fetching the greeting message.');
-  const responsePromise = fetch('/data');
-  responsePromise.then(handleResponse);
-}
-
-/**
- * Handles response by converting it to text and passing the result to 
- * addGreatingToDom().
- */
-function handleResponse(response) {
-  console.log('Handling the response.');
-  const textPromise = response.text();
-  textPromise.then(addGreetingToDom);
-}
-
-/**
- * Adds the greeting message to the DOM.
- */
-function addGreetingToDom(greeting) {
-  console.log('Adding greeting to dom: ' + greeting);
-  const greetingContainer = document.getElementById('greeting-container');
-  greetingContainer.innerText = greeting;
-}
-
-/**
- * Fetches the greeting from the server and adds it to the DOM using arrow function.
- */
-function getGreetingArrow() {
-  fetch('/data').then(response => response.text()).then(greeting => {
-    document.getElementById('greeting-container').innerText = greeting;
-  });
-}
-
-/**
- * Fetches the greeting from the server and adds it to the DOM using async await.
- */
-async function getGreetingAwait() {
-  const response = await fetch('/data');
-  const greeting = await response.text();
-  document.getElementById('greeting-container').innerText = greeting;
-}
-
-/**
- * Fetches the greeting from the server and adds a randomly selected one
- * to the DOM in JSON String format with the arrow function.
- */
-function getGreetingJson() {
-  fetch('/data').then(response => response.json()).then(input => {
-    // Pick a random greeting.
-    const greeting = input.greetings[Math.floor(Math.random() * input.greetings.length)];
-    // Add it to the page.
-    document.getElementById('greeting-container').innerText = greeting;
-  });
-}
-
-/**
- * Fetches all of the previous comments made by users and 
- * displays it below the input comment form
- */
-function getComments() {
-  fetch('/data').then(response => response.json()).then(text => {
-    const commentsContainer = document.getElementById('previous-comments');
-    text.forEach(entry => {
-      commentsContainer.appendChild(createListElementForComment(entry));
-    });
-  });
 }
    
 /**
@@ -156,13 +70,18 @@ function epochToLocale(epoch) {
  * refreshes the comment section
  */
 function refreshComments() {
+  // read user input value
+  var maxNumComments = document.getElementById('max-num-comments').value;
+  if (maxNumComments < 0) {
+    alert('The maximum number of comments on display should be a non-negative integer.');
+    return;
+  }
   // remove previous comments
   var previousComments = document.getElementById('previous-comments');
   while (previousComments.firstChild) {
     previousComments.removeChild(previousComments.firstChild);
   }
-  // read user input value
-  var maxNumComments = document.getElementById('max-num-comments').value;
+  
   // encode user input parameter as a query string embedded in the URL
   var queryUrl = updateQueryString('max-num-comments', maxNumComments);
   // fetch from Datastroe and repopulate comment section
@@ -187,6 +106,54 @@ function updateQueryString(key, value) {
  * Deletes a chosen comment from Datastore, 
  */
 function deleteComment(comment) {
-  const params = updateQueryString('id', comment.id)
-  fetch('/delete-data', {method: 'POST', body: params});
+  getLoginStatus('delete').then(response => {
+    if (response) {
+      const params = updateQueryString('id', comment.id);
+      fetch('/delete-data', {method: 'POST', body: params}).then(response => response.text()).then(message => {
+        alert(message);
+        refreshComments();
+      });
+    } else {
+      alert('You need to log in to delete a comment.');
+    }
+  });
+}
+
+/**
+ * Fetches the login status of user
+ * if user clicked login button, log user in
+ * if they clicked logout button, log them out
+ * if delete comment, make a request
+ * refreshes comments
+ */
+function getLoginStatus(id) {
+  return fetch('/login-status').then(response => response.text()).then(link => {
+    // if user is logged in, server sends the logout link
+    if (link.includes('logout')) {
+      document.getElementById('post-event').style.display = 'block';
+      if (id === 'logout') {
+        location.replace(link);
+      } else if (id === 'delete') {
+        return true;
+      }
+    } else {
+      document.getElementById('post-event').style.display = 'none';
+      if (id === 'login') {
+        location.replace(link);
+      }
+    }
+    refreshComments();
+  });
+}
+
+/**
+ * If the element is currently visible, change to hidden
+ * If it is hidden, show it
+ */
+function changeDisplayState(id) {
+  if (document.getElementById(id).style.display === 'block') {
+    document.getElementById(id).style.display = 'none';
+  } else {
+    document.getElementById(id).style.display = 'block';
+  }
 }
