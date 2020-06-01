@@ -88,7 +88,7 @@ public class DataServlet extends HttpServlet {
       String name = (String) entity.getProperty("name");
       Long timestamp = ((Number) entity.getProperty("timestamp")).longValue();
       String content = (String) entity.getProperty("content");
-      String imageUrl = (String) entity.getProperty("iamge");
+      String imageUrl = (String) entity.getProperty("image");
 
       Comment comment = new Comment(id, name, timestamp, content, imageUrl);
       comments.add(comment);
@@ -129,44 +129,43 @@ public class DataServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     UserService userService = UserServiceFactory.getUserService();
-    if (userService.isUserLoggedIn()) {
-      // get email from userservice
-      String userEmail = userService.getCurrentUser().getEmail();
-      // Get the nickname and comment from the post request
-      String userName = getParam(request, "name-input", "");
-      String comment = getParam(request, "comment-input", "");
+    // checked for user log in status on the client side
+    // get email from userservice
+    String userEmail = userService.getCurrentUser().getEmail();
+    // Get the nickname and comment from the post request
+    String userName = getParam(request, "name-input", "");
+    String comment = getParam(request, "comment-input", "");
 
-      // Get the URL of the image that the user uploaded to Blobstore.
-      String imageUrl = (String) getUploadedFileUrl(request, "image");
+    // Get the URL of the image that the user uploaded to Blobstore.
+    String imageUrl = (String) getUploadedFileUrl(request, "image");
 
-      if (userName.isEmpty()) {
-        userName = userEmail;
-      }
-      // TODO: a more elegant way of error checking/notifying user 
-      if (comment.isEmpty() && imageUrl == null) {
-        response.setContentType("text/html");
-        response.getWriter().println("Please enter a valid comment or upload an image.");
-        return;
-      } 
-
-      // get the current timestamp
-      Instant currentTime = Instant.now();
-      long currentTimeEpoch = currentTime.toEpochMilli();
-      // TODO: look into if two instances of comments are posted at the same milisecond
-
-      Entity commentEntity = new Entity("Comment");
-      commentEntity.setProperty("email", userEmail);
-      commentEntity.setProperty("name", userName);
-      commentEntity.setProperty("timestamp", currentTimeEpoch);
-      commentEntity.setProperty("content", comment);
-      commentEntity.setProperty("iamge", imageUrl);
-
-      DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-      datastore.put(commentEntity);
-    
-      // Redirect back to the HTML page.
-      response.sendRedirect("/index.html");
+    if (userName.isEmpty()) {
+      userName = userEmail;
     }
+    // TODO: a more elegant way of error checking/notifying user 
+    if (comment.isEmpty() && imageUrl == null) {
+      response.setContentType("text/html");
+      response.getWriter().println("Please enter a valid comment or upload an image.");
+      return;
+    } 
+
+    // get the current timestamp
+    Instant currentTimeMillisInstant = Instant.now();
+    long currentTimeMillis = currentTimeMillisInstant.toEpochMilli();
+    // TODO: look into if two instances of comments are posted at the same milisecond
+
+    Entity commentEntity = new Entity("Comment");
+    commentEntity.setProperty("email", userEmail);
+    commentEntity.setProperty("name", userName);
+    commentEntity.setProperty("timestamp", currentTimeMillis);
+    commentEntity.setProperty("content", comment);
+    commentEntity.setProperty("image", imageUrl);
+
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    datastore.put(commentEntity);
+  
+    // Redirect back to the HTML page.
+    response.sendRedirect("/index.html");
   }
 
   /**

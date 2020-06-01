@@ -157,7 +157,7 @@ function getLoginStatus(id) {
  * If the element is currently visible, change to hidden
  * If it is hidden, show it
  */
-function changeDisplayState(id) {
+function toggleVisibility(id) {
   if (document.getElementById(id).style.display === 'block') {
     document.getElementById(id).style.display = 'none';
   } else {
