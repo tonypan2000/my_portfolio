@@ -39,3 +39,7 @@
   color: -webkit-link;
   cursor: pointer;
 }
+
+.hidden {
+  display: none;
+}

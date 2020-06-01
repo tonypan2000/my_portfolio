@@ -25,7 +25,7 @@
     <!-- End Google Tag Manager -->
   </head>
   
-  <body id="body" onload="getLoginStatus(this.id)">
+  <body id="body" onload="getLoginStatus(this.id);fetchBlobUrl();">
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-56HP3B7"
         height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -152,7 +152,7 @@
       <button id="logout" onclick="getLoginStatus(this.id)">Logout</button>
 
       <!-- Form for comments !-->
-      <form action="/data" method="POST" id="post-event">
+      <form method="POST" id="post-event" enctype="multipart/form-data">
         <h2>Post Your Comment!</h2>
         <p>Your name by default is your email address used in login, you may also enter a nickname below.</p>
         <label for="name">Your name:</label>
@@ -160,6 +160,9 @@
         <br><br>
         <!-- TODO: Check for min length of entries (in Javascript) and warn user !-->
         <textarea id="comment-form" name="comment-input" minlength="1"></textarea>
+        <!-- Form for uploading BLOBs !-->
+        <p>Upload an Image</p>
+        <input id="blob-input" type="file" class="hidden" name="image">
         <br><br>
         <input type="submit" />
       </form>

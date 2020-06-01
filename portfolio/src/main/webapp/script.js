@@ -44,6 +44,13 @@ function createListElementForComment(entry) {
   const commentElement = document.createElement('p');
   commentElement.innerText = entry.content;
   liElement.appendChild(commentElement);
+  if (entry.imageUrl !== undefined) {
+    const imageElement = document.createElement('img');
+    imageElement.src = entry.imageUrl;
+    liElement.appendChild(imageElement);
+    const lineBreak = document.createElement('br');
+    liElement.appendChild(lineBreak);
+  }
   const deleteButtonElement = document.createElement('button');
   deleteButtonElement.innerText = 'Delete';
   deleteButtonElement.addEventListener('click', () => {
@@ -156,4 +163,17 @@ function changeDisplayState(id) {
   } else {
     document.getElementById(id).style.display = 'block';
   }
+}
+
+/**
+ * Fetches the URL for BlobStore and unhides
+ * the form to submit
+ */
+function fetchBlobUrl() {
+  fetch('/blob-url').then(response => response.text()).then(url => {
+    const submitForm = document.getElementById('post-event');
+    submitForm.action = url;
+    const blobInput = document.getElementById('blob-input');
+    blobInput.classList.remove('hidden');
+  });
 }
