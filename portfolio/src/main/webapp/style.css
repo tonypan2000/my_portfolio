@@ -12,9 +12,10 @@
   margin-top: 20px;
 }
 
-#icon1, #icon2, #icon3, #icon4, #icon5, #icon6 {
-  height: 30px;
-  width: 30px;
+.icon {
+  height: 50px;
+  width: 50px;
+  padding-right: 20px;
 }
 
 #comment-form {
@@ -24,4 +25,17 @@
 
 #previous-comments {
   list-style-type: none;
+}
+
+#post-event {
+  display: none;
+}
+
+.detail {
+  display: none;
+}
+
+.project-title {
+  color: -webkit-link;
+  cursor: pointer;
 }
