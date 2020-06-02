@@ -44,6 +44,18 @@ function createListElementForComment(entry) {
   const commentElement = document.createElement('p');
   commentElement.innerText = entry.content;
   liElement.appendChild(commentElement);
+  if (entry.mood !== undefined) {
+    const moodText = document.createElement('label');
+    moodText.innerHTML = 'mood: ';
+    liElement.appendChild(moodText);
+    const moodElement = document.createElement('img');
+    moodElement.src = 'emojis/' + entry.mood + '.png';
+    moodElement.style.width = '20px';
+    moodElement.style.height = '20px';
+    liElement.appendChild(moodElement);
+    const lineBreak = document.createElement('br');
+    liElement.appendChild(lineBreak);
+  }
   console.log('image url fetching: ' + entry.imageUrl);
   if (entry.imageUrl !== undefined) {
     const imageElement = document.createElement('img');

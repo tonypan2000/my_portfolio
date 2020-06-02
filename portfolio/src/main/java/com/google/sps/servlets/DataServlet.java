@@ -61,14 +61,16 @@ public class DataServlet extends HttpServlet {
     Long timestamp;
     String content;
     String imageUrl;
+    String mood;
     String cursor;
 
-    private Comment(long id, String name, Long timestamp, String content, String imageUrl, String cursor) {
+    private Comment(long id, String name, Long timestamp, String content, String imageUrl, String mood, String cursor) {
       this.id = id;
       this.name = name;
       this.timestamp = timestamp;
       this.content = content;
       this.imageUrl = imageUrl;
+      this.mood = mood;
       this.cursor = cursor;
     }
   }
@@ -111,9 +113,10 @@ public class DataServlet extends HttpServlet {
       Long timestamp = ((Number) entity.getProperty("timestamp")).longValue();
       String content = (String) entity.getProperty("content");
       String imageUrl = (String) entity.getProperty("image");
+      String mood = (String) entity.getProperty("mood");
       String cursor = encodedCursor;
 
-      Comment comment = new Comment(id, name, timestamp, content, imageUrl, cursor);
+      Comment comment = new Comment(id, name, timestamp, content, imageUrl, mood, cursor);
       comments.add(comment);
     }
 
@@ -162,6 +165,7 @@ public class DataServlet extends HttpServlet {
     // Get the URL of the image that the user uploaded to Blobstore.
     String imageUrl = (String) getUploadedFileUrl(request, "image");
 
+    String mood = getParam(request, "mood", "");
     if (userName.isEmpty()) {
       userName = userEmail;
     }
@@ -183,6 +187,7 @@ public class DataServlet extends HttpServlet {
     commentEntity.setProperty("timestamp", currentTimeMillis);
     commentEntity.setProperty("content", comment);
     commentEntity.setProperty("image", imageUrl);
+    commentEntity.setProperty("mood", mood);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(commentEntity);
