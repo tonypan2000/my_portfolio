@@ -44,6 +44,7 @@ function createListElementForComment(entry) {
   const commentElement = document.createElement('p');
   commentElement.innerText = entry.content;
   liElement.appendChild(commentElement);
+  console.log('image url fetching: ' + entry.imageUrl);
   if (entry.imageUrl !== undefined) {
     const imageElement = document.createElement('img');
     imageElement.src = entry.imageUrl;
@@ -60,6 +61,9 @@ function createListElementForComment(entry) {
     refreshComments();
   })
   liElement.appendChild(deleteButtonElement);
+  // TODO: find a more efficient way to update current cursor
+  const nextPageElement = document.getElementById('next-page');
+  nextPageElement.innerHTML = entry.cursor;
   return liElement;
 }
 
@@ -76,7 +80,7 @@ function epochToLocale(epoch) {
  * After user changes the max num of comments to display
  * refreshes the comment section
  */
-function refreshComments() {
+function refreshComments(cursorString) {
   // read user input value
   var maxNumComments = document.getElementById('max-num-comments').value;
   if (maxNumComments < 0) {
@@ -90,9 +94,14 @@ function refreshComments() {
   }
   
   // encode user input parameter as a query string embedded in the URL
-  var queryUrl = updateQueryString('max-num-comments', maxNumComments);
+  var maxCommentsQuery = updateQueryString('max-num-comments', maxNumComments);
+  var cursorQuery = updateQueryString('cursor', cursorString);
   // fetch from Datastroe and repopulate comment section
-  fetch('/data?' + queryUrl).then(response => response.json()).then(text => {
+  var queryString = '/data?' + maxCommentsQuery;
+  if (cursorString !== undefined) {
+    queryString += '&' + cursorQuery;
+  }
+  fetch(queryString).then(response => response.json()).then(text => {
     const commentsContainer = document.getElementById('previous-comments');
     text.forEach(entry => {
       commentsContainer.appendChild(createListElementForComment(entry));
@@ -176,4 +185,14 @@ function fetchBlobUrl() {
     const blobInput = document.getElementById('blob-input');
     blobInput.classList.remove('hidden');
   });
+}
+
+/**
+ * Gets the current cursor from the last comment displayed
+ * Pass that cursor to server end to fetch the next n comments
+ */
+function nextPage() {
+  const nextPageElement = document.getElementById('next-page');
+  const cursorString = nextPageElement.innerHTML;
+  refreshComments(cursorString);
 }

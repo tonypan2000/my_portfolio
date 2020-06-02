@@ -19,6 +19,7 @@ import com.google.appengine.api.blobstore.BlobInfoFactory;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreService;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
@@ -28,6 +29,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.datastore.QueryResultList;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
@@ -59,13 +61,15 @@ public class DataServlet extends HttpServlet {
     Long timestamp;
     String content;
     String imageUrl;
+    String cursor;
 
-    private Comment(long id, String name, Long timestamp, String content, String imageUrl) {
+    private Comment(long id, String name, Long timestamp, String content, String imageUrl, String cursor) {
       this.id = id;
       this.name = name;
       this.timestamp = timestamp;
       this.content = content;
       this.imageUrl = imageUrl;
+      this.cursor = cursor;
     }
   }
 
@@ -74,13 +78,31 @@ public class DataServlet extends HttpServlet {
     // Get the max num comments from input
     int maxNumComments = getMaxNumComments(request, 5);
 
+    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(maxNumComments);
+
+    // If this servlet is passed a cursor parameter, let's use it.
+    String startCursor = request.getParameter("cursor");
+    if (startCursor != null) {
+      fetchOptions.startCursor(Cursor.fromWebSafeString(startCursor));
+    }
+
     Query query = new Query("Comment").addSort("timestamp", SortDirection.DESCENDING);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     PreparedQuery preparedQuery = datastore.prepare(query);
 
     // limits preparedQuery to the user specified
-    List<Entity> entities = preparedQuery.asList(FetchOptions.Builder.withLimit(maxNumComments));
+    QueryResultList<Entity> entities;
+    String encodedCursor;
+    try {
+      entities = preparedQuery.asQueryResultList(fetchOptions);
+      Cursor originalCursor = entities.getCursor();
+      encodedCursor = originalCursor.toWebSafeString();
+    } catch (IllegalArgumentException e) {
+      response.setContentType("text/html;");
+      response.getWriter().println("Invalid cursor: " + e);
+      return;
+    }
 
     List<Comment> comments = new ArrayList<>();
     for (Entity entity : entities) {
@@ -89,8 +111,9 @@ public class DataServlet extends HttpServlet {
       Long timestamp = ((Number) entity.getProperty("timestamp")).longValue();
       String content = (String) entity.getProperty("content");
       String imageUrl = (String) entity.getProperty("image");
+      String cursor = encodedCursor;
 
-      Comment comment = new Comment(id, name, timestamp, content, imageUrl);
+      Comment comment = new Comment(id, name, timestamp, content, imageUrl, cursor);
       comments.add(comment);
     }
 

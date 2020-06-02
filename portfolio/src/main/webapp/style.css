@@ -43,3 +43,8 @@
 .hidden {
   display: none;
 }
+
+.pagination {
+  color: -webkit-link;
+  cursor: pointer;
+}
