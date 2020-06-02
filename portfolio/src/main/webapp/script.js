@@ -92,7 +92,7 @@ function epochToLocale(epoch) {
  * After user changes the max num of comments to display
  * refreshes the comment section
  */
-function refreshComments(cursorString) {
+function refreshComments(anotherQueryString) {
   // read user input value
   var maxNumComments = document.getElementById('max-num-comments').value;
   if (maxNumComments < 0) {
@@ -107,11 +107,10 @@ function refreshComments(cursorString) {
   
   // encode user input parameter as a query string embedded in the URL
   var maxCommentsQuery = updateQueryString('max-num-comments', maxNumComments);
-  var cursorQuery = updateQueryString('cursor', cursorString);
   // fetch from Datastroe and repopulate comment section
   var queryString = '/data?' + maxCommentsQuery;
-  if (cursorString !== undefined) {
-    queryString += '&' + cursorQuery;
+  if (anotherQueryString !== undefined) {
+    queryString += '&' + anotherQueryString;
   }
   fetch(queryString).then(response => response.json()).then(text => {
     const commentsContainer = document.getElementById('previous-comments');
@@ -206,5 +205,18 @@ function fetchBlobUrl() {
 function nextPage() {
   const nextPageElement = document.getElementById('next-page');
   const cursorString = nextPageElement.innerHTML;
-  refreshComments(cursorString);
+  var cursorQuery = updateQueryString('cursor', cursorString);
+  
+  refreshComments(cursorQuery);
+}
+
+/**
+ * Sends request to /data to translate previous comments to a language
+ */
+function requestTranslation() {
+  const selectedLanguage = document.getElementById('translation').value;
+  const commentElement = document.getElementById('previous-comments');
+  commentElement.lang = selectedLanguage;
+  const languageQuery = updateQueryString('language', selectedLanguage);
+  refreshComments(languageQuery);
 }

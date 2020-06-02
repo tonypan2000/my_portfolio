@@ -35,6 +35,9 @@ import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.cloud.translate.Translate;
+import com.google.cloud.translate.TranslateOptions;
+import com.google.cloud.translate.Translation;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.lang.Long;
@@ -106,24 +109,32 @@ public class DataServlet extends HttpServlet {
       return;
     }
 
+    // Do the translation.
+    String language = request.getParameter("language");
+    Translate translate = TranslateOptions.getDefaultInstance().getService();
+
     List<Comment> comments = new ArrayList<>();
     for (Entity entity : entities) {
       long id = entity.getKey().getId();
       String name = (String) entity.getProperty("name");
       Long timestamp = ((Number) entity.getProperty("timestamp")).longValue();
       String content = (String) entity.getProperty("content");
+      Translation translation = translate.translate(content, Translate.TranslateOption.targetLanguage(language));
+      String translatedText = translation.getTranslatedText();
       String imageUrl = (String) entity.getProperty("image");
       String mood = (String) entity.getProperty("mood");
+      // TODO: more efficient method of storing cursor
       String cursor = encodedCursor;
 
-      Comment comment = new Comment(id, name, timestamp, content, imageUrl, mood, cursor);
+      Comment comment = new Comment(id, name, timestamp, translatedText, imageUrl, mood, cursor);
       comments.add(comment);
     }
 
     Gson gson = new Gson();
 
     // Send the JSON as the response
-    response.setContentType("application/json;");
+    response.setContentType("application/json; charset=UTF-8");
+    response.setCharacterEncoding("UTF-8");
     response.getWriter().println(gson.toJson(comments));
   }
 
@@ -165,7 +176,7 @@ public class DataServlet extends HttpServlet {
     // Get the URL of the image that the user uploaded to Blobstore.
     String imageUrl = (String) getUploadedFileUrl(request, "image");
 
-    String mood = getParam(request, "mood", "");
+    String mood = getParam(request, "mood", "Happy");
     if (userName.isEmpty()) {
       userName = userEmail;
     }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
     <meta charset="UTF-8">
     <title>Tony's Portfolio</title>
@@ -37,7 +37,7 @@
 
       <!-- Random Greetings !-->
       <p>Click here to receive a random greeting from me:</p>
-      <button onclick="addRandomGreeting()">Hello</button>
+      <button onclick="addRandomGreeting();">Hello</button>
       <div id="greeting-container"></div>
 
       <!-- Profile pic !-->
@@ -155,15 +155,16 @@
       <form method="POST" id="post-event" enctype="multipart/form-data">
         <h2>Post Your Comment!</h2>
         <label>Your name by default is your email address used in login, you may also enter a nickname below.</label>
+        <br><br>
         <label for="name">Your name:</label>
         <input type="text" id="name" name="name-input" minlength="1" />
         <br><br>
         <!-- TODO: Check for min length of entries (in Javascript) and warn user !-->
         <textarea id="comment-form" name="comment-input" minlength="1"></textarea>
         <!-- Select tag for choosing emoji !-->
-        <label for="Mood">How are you feeling (happy by default):</label>
+        <label for="mood">How are you feeling (happy by default):</label>
         <select name="mood" id="mood">
-          <option value="Happy"><li>Happy</li></option>
+          <option value="Happy">Happy</option>
           <option value="Lol">Lol</option>
           <option value="Love">Love</option>
           <option value="Ok">Ok</option>
@@ -182,7 +183,18 @@
       <p>Maximum number of comments on display:</p>
       <input type="number" id="max-num-comments" name="max-num-comments" min="0" value="5">
       <button onclick="refreshComments()">Set</button>
-      <br><br>
+      <br>
+      <!-- Select language for cloud translation !-->
+      <p>What language would you like to display previous comments in (English by default):</p>
+      <select name="translation" id="translation">
+        <option value="en">English</option>
+        <option value="zh">Chinese</option>
+        <option value="es">Spanish</option>
+        <option value="hi">Hindi</option>
+        <option value="ar">Arabic</option>
+      </select>
+      <button onclick="requestTranslation();">Translate</button>
+      <br>
       <p>Note: you can only delete your own comments.</p>
       <ul id="previous-comments"></ul>
 
