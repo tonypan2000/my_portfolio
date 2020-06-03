@@ -226,3 +226,43 @@ function requestTranslation() {
   const languageQuery = updateQueryString('language', selectedLanguage);
   refreshComments(languageQuery);
 }
+
+/** Creates a map and adds it to the page. */
+function initMap() {
+  // Try HTML5 geolocation.
+  var map = new google.maps.Map(
+      document.getElementById('map'), {center: {lat: 42.280827, lng: -83.743034}, zoom: 5});
+  var infoWindow = new google.maps.InfoWindow;
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      var pos = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+      map = new google.maps.Map(
+          document.getElementById('map'), {center: pos, zoom: 5});
+      
+      var marker = new google.maps.Marker({position: pos, map: map});
+      infoWindow.setPosition(pos);
+      infoWindow.setContent('You are here.');
+      infoWindow.open(map);
+      map.setCenter(pos);
+    }, function() {
+      handleLocationError(true, infoWindow, map.getCenter());
+    });
+  } else {
+    // Browser doesn't support Geolocation
+    handleLocationError(false, infoWindow, map.getCenter());
+  }
+
+  /**
+   * Informs user whether geoservice works on their device
+   */
+  function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+    infoWindow.setPosition(pos);
+    infoWindow.setContent(browserHasGeolocation ?
+                          'Please enable location services.' :
+                          'Error: Your browser doesn\'t support geolocation.');
+    infoWindow.open(map);
+  }
+}
