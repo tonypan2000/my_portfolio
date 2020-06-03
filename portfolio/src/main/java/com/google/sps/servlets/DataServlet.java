@@ -71,7 +71,8 @@ public class DataServlet extends HttpServlet {
     float sentiment;
     String cursor;
 
-    private Comment(long id, String name, Long timestamp, String content, String imageUrl, String mood, float sentiment, String cursor) {
+    private Comment(long id, String name, Long timestamp, String content,
+        String imageUrl, String mood, float sentiment, String cursor) {
       this.id = id;
       this.name = name;
       this.timestamp = timestamp;
