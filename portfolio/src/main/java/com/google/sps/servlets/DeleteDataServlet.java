@@ -31,7 +31,7 @@ public class DeleteDataServlet extends HttpServlet {
     try {
       posterEmail = (String) datastore.get(commentKey).getProperty("email");
     } catch (Exception e) {
-      System.err.println(e);
+      response.getWriter().println(e);
       return;
     }
     if (posterEmail.equals(userEmail)) {

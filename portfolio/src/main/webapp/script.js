@@ -44,6 +44,32 @@ function createListElementForComment(entry) {
   const commentElement = document.createElement('p');
   commentElement.innerText = entry.content;
   liElement.appendChild(commentElement);
+  if (entry.sentiment !== undefined && entry.sentiment !== -2) {
+    const sentimentElement = document.createElement('label');
+    sentimentElement.innerHTML = 'Sentiment score: ' + entry.sentiment;
+    liElement.appendChild(sentimentElement);
+    liElement.appendChild(document.createElement('br'));
+  }
+  if (entry.mood !== undefined) {
+    const moodText = document.createElement('label');
+    moodText.innerHTML = 'Mood: ';
+    liElement.appendChild(moodText);
+    const moodElement = document.createElement('img');
+    moodElement.src = 'emojis/' + entry.mood + '.png';
+    moodElement.style.width = '20px';
+    moodElement.style.height = '20px';
+    liElement.appendChild(moodElement);
+    const lineBreak = document.createElement('br');
+    liElement.appendChild(lineBreak);
+  }
+  console.log('image url fetching: ' + entry.imageUrl);
+  if (entry.imageUrl !== undefined) {
+    const imageElement = document.createElement('img');
+    imageElement.src = entry.imageUrl;
+    liElement.appendChild(imageElement);
+    const lineBreak = document.createElement('br');
+    liElement.appendChild(lineBreak);
+  }
   const deleteButtonElement = document.createElement('button');
   deleteButtonElement.innerText = 'Delete';
   deleteButtonElement.addEventListener('click', () => {
@@ -53,6 +79,9 @@ function createListElementForComment(entry) {
     refreshComments();
   })
   liElement.appendChild(deleteButtonElement);
+  // TODO: find a more efficient way to update current cursor
+  const nextPageElement = document.getElementById('next-page');
+  nextPageElement.innerHTML = entry.cursor;
   return liElement;
 }
 
@@ -69,7 +98,7 @@ function epochToLocale(epoch) {
  * After user changes the max num of comments to display
  * refreshes the comment section
  */
-function refreshComments() {
+function refreshComments(anotherQueryString) {
   // read user input value
   var maxNumComments = document.getElementById('max-num-comments').value;
   if (maxNumComments < 0) {
@@ -83,9 +112,13 @@ function refreshComments() {
   }
   
   // encode user input parameter as a query string embedded in the URL
-  var queryUrl = updateQueryString('max-num-comments', maxNumComments);
+  var maxCommentsQuery = updateQueryString('max-num-comments', maxNumComments);
   // fetch from Datastroe and repopulate comment section
-  fetch('/data?' + queryUrl).then(response => response.json()).then(text => {
+  var queryString = '/data?' + maxCommentsQuery;
+  if (anotherQueryString !== undefined) {
+    queryString += '&' + anotherQueryString;
+  }
+  fetch(queryString).then(response => response.json()).then(text => {
     const commentsContainer = document.getElementById('previous-comments');
     text.forEach(entry => {
       commentsContainer.appendChild(createListElementForComment(entry));
@@ -150,10 +183,46 @@ function getLoginStatus(id) {
  * If the element is currently visible, change to hidden
  * If it is hidden, show it
  */
-function changeDisplayState(id) {
+function toggleVisibility(id) {
   if (document.getElementById(id).style.display === 'block') {
     document.getElementById(id).style.display = 'none';
   } else {
     document.getElementById(id).style.display = 'block';
   }
+}
+
+/**
+ * Fetches the URL for BlobStore and unhides
+ * the form to submit
+ */
+function fetchBlobUrl() {
+  fetch('/blob-url').then(response => response.text()).then(url => {
+    const submitForm = document.getElementById('post-event');
+    submitForm.action = url;
+    const blobInput = document.getElementById('blob-input');
+    blobInput.classList.remove('hidden');
+  });
+}
+
+/**
+ * Gets the current cursor from the last comment displayed
+ * Pass that cursor to server end to fetch the next n comments
+ */
+function nextPage() {
+  const nextPageElement = document.getElementById('next-page');
+  const cursorString = nextPageElement.innerHTML;
+  var cursorQuery = updateQueryString('cursor', cursorString);
+  
+  refreshComments(cursorQuery);
+}
+
+/**
+ * Sends request to /data to translate previous comments to a language
+ */
+function requestTranslation() {
+  const selectedLanguage = document.getElementById('translation').value;
+  const commentElement = document.getElementById('previous-comments');
+  commentElement.lang = selectedLanguage;
+  const languageQuery = updateQueryString('language', selectedLanguage);
+  refreshComments(languageQuery);
 }
