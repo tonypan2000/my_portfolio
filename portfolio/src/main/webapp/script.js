@@ -44,9 +44,15 @@ function createListElementForComment(entry) {
   const commentElement = document.createElement('p');
   commentElement.innerText = entry.content;
   liElement.appendChild(commentElement);
+  if (entry.sentiment !== undefined && entry.sentiment !== -2) {
+    const sentimentElement = document.createElement('label');
+    sentimentElement.innerHTML = 'Sentiment score: ' + entry.sentiment;
+    liElement.appendChild(sentimentElement);
+    liElement.appendChild(document.createElement('br'));
+  }
   if (entry.mood !== undefined) {
     const moodText = document.createElement('label');
-    moodText.innerHTML = 'mood: ';
+    moodText.innerHTML = 'Mood: ';
     liElement.appendChild(moodText);
     const moodElement = document.createElement('img');
     moodElement.src = 'emojis/' + entry.mood + '.png';

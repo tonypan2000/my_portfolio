@@ -35,6 +35,9 @@ import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.cloud.language.v1.Document;
+import com.google.cloud.language.v1.LanguageServiceClient;
+import com.google.cloud.language.v1.Sentiment;
 import com.google.cloud.translate.Translate;
 import com.google.cloud.translate.TranslateOptions;
 import com.google.cloud.translate.Translation;
@@ -65,15 +68,17 @@ public class DataServlet extends HttpServlet {
     String content;
     String imageUrl;
     String mood;
+    float sentiment;
     String cursor;
 
-    private Comment(long id, String name, Long timestamp, String content, String imageUrl, String mood, String cursor) {
+    private Comment(long id, String name, Long timestamp, String content, String imageUrl, String mood, float sentiment, String cursor) {
       this.id = id;
       this.name = name;
       this.timestamp = timestamp;
       this.content = content;
       this.imageUrl = imageUrl;
       this.mood = mood;
+      this.sentiment = sentiment;
       this.cursor = cursor;
     }
   }
@@ -123,10 +128,11 @@ public class DataServlet extends HttpServlet {
       String translatedText = translation.getTranslatedText();
       String imageUrl = (String) entity.getProperty("image");
       String mood = (String) entity.getProperty("mood");
+      float sentiment = ((Number) entity.getProperty("sentiment")).floatValue();
       // TODO: more efficient method of storing cursor
       String cursor = encodedCursor;
 
-      Comment comment = new Comment(id, name, timestamp, translatedText, imageUrl, mood, cursor);
+      Comment comment = new Comment(id, name, timestamp, translatedText, imageUrl, mood, sentiment, cursor);
       comments.add(comment);
     }
 
@@ -187,6 +193,16 @@ public class DataServlet extends HttpServlet {
       return;
     } 
 
+    // perform sentiment analysis
+    float score = -2; // sentinel value
+    if (!comment.isEmpty()) {
+      Document doc = Document.newBuilder().setContent(comment).setType(Document.Type.PLAIN_TEXT).build();
+      LanguageServiceClient languageService = LanguageServiceClient.create();
+      Sentiment sentiment = languageService.analyzeSentiment(doc).getDocumentSentiment();
+      score = sentiment.getScore();
+      languageService.close();
+    }
+
     // get the current timestamp
     Instant currentTimeMillisInstant = Instant.now();
     long currentTimeMillis = currentTimeMillisInstant.toEpochMilli();
@@ -199,6 +215,7 @@ public class DataServlet extends HttpServlet {
     commentEntity.setProperty("content", comment);
     commentEntity.setProperty("image", imageUrl);
     commentEntity.setProperty("mood", mood);
+    commentEntity.setProperty("sentiment", score);
 
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(commentEntity);

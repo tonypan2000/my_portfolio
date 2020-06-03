@@ -37,10 +37,16 @@
     </dependency>
     <!-- Google Cloud Translation -->
     <dependency>
-    <groupId>com.google.cloud</groupId>
-    <artifactId>google-cloud-translate</artifactId>
-    <version>1.70.0</version>
-  </dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-translate</artifactId>
+      <version>1.70.0</version>
+    </dependency>
+    <!-- Google Cloud Sentiment Analysis -->
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-language</artifactId>
+      <version>1.55.0</version>
+    </dependency>
   </dependencies>
 
   <build>
