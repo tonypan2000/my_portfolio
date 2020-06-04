@@ -23,6 +23,9 @@
         'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
         })(window,document,'script','dataLayer','GTM-56HP3B7');</script>
     <!-- End Google Tag Manager -->
+    <!-- Google Maps API Key -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRoWmpBfVbAdP17w7Lfnp6J7AiJ30nnCw&callback=initMap"
+        type="text/javascript"></script>
   </head>
   
   <body id="body" onload="getLoginStatus(this.id);fetchBlobUrl();">
@@ -145,6 +148,10 @@
         <a href="https://www.facebook.com/tonypan2000" target="_blank" title="Facebook"><img class="icon" src="/icons/facebook_icon.png" alt="My Facebook"></a>
         <a href="https://www.youtube.com/channel/UCp-751qVxozwSihorCI6iNw" target="_blank" title="Youtube"><img class="icon" src="/icons/youtube_icon.png" alt="My YouTube"></a>
       </p>
+      
+      <!-- displays a Google Map -->
+      <h2>A Google Map</h2>
+      <div id="map"></div>
 
       <!-- Login/logout Button!-->
       <h4>Log in to post comments</h4>
