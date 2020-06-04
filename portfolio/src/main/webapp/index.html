@@ -5,7 +5,6 @@
     <title>Tony's Portfolio</title>
     <link rel="icon" type="image/png" href="/icons/google_icon.png">
     <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-105323938-4"></script>
@@ -26,6 +25,9 @@
     <!-- Google Maps API Key -->
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRoWmpBfVbAdP17w7Lfnp6J7AiJ30nnCw&callback=initMap"
         type="text/javascript"></script>
+    <!-- Google Charts -->
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="script.js"></script>
   </head>
   
   <body id="body" onload="getLoginStatus(this.id);fetchBlobUrl();">
@@ -152,6 +154,10 @@
       <!-- displays a Google Map -->
       <h2>A Google Map</h2>
       <div id="map"></div>
+
+      <!-- displays a chart -->
+      <h2>User Device Chart</h2>
+      <div id="chart-container"></div>
 
       <!-- Login/logout Button!-->
       <h4>Log in to post comments</h4>
