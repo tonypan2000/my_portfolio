@@ -266,3 +266,32 @@ function initMap() {
     infoWindow.open(map);
   }
 }
+
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawChart);
+/** 
+ * Creates a chart and adds it to the page. 
+ * TODO: fetch from Google Analytics API to get user data
+ * Display the types of devices used to access my webpage
+ */
+function drawChart() {
+  const data = new google.visualization.DataTable();
+  // hard coded actual data as of June 3rd, 2020
+  data.addColumn('string', 'Browser');
+  data.addColumn('number', 'Count');
+        data.addRows([
+          ['Chrome', 19],
+          ['Safari', 18],
+          ['Android Webview', 1]
+        ]);
+
+  const options = {
+    'title': 'Browser',
+    'width':500,
+    'height':400
+  };
+
+  const chart = new google.visualization.PieChart(
+      document.getElementById('chart-container'));
+  chart.draw(data, options);
+}
