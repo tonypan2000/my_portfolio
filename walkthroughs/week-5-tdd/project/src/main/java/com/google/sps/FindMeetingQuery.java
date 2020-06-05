@@ -14,10 +14,16 @@
 
 package com.google.sps;
 
+import com.google.common.collect.BoundType;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.*; 
 
 public final class FindMeetingQuery {
   public Collection<TimeRange> query(Collection<Event> events, MeetingRequest request) {
@@ -33,79 +39,46 @@ public final class FindMeetingQuery {
       return Arrays.asList();
     }
 
-    List<TimeRange> meetingTimes = new ArrayList<TimeRange>();
-    // schedule for one attendee, the person initially starts free all day
-    meetingTimes.add(TimeRange.WHOLE_DAY);
-    // go through every event, mark each event the person's involved with 
-    for (Event event : events) {
-      for (String name : attendees) {
-        if (event.getAttendees().contains(name)) {
-          // splits the person's remaining available times
-          // remove the chunk(s) that are unavailable
-          for (int i = 0; i < meetingTimes.size(); i++) {
-            if (event.getWhen().overlaps(meetingTimes.get(i))) {
-              TimeRange currentRange = meetingTimes.get(i);
-              meetingTimes.remove(i);
-              // add the new split time slots
-              if (currentRange.start() < event.getWhen().start() && 
-                  event.getWhen().start() - currentRange.start() >= request.getDuration()) {
-                meetingTimes.add(currentRange.fromStartEnd(currentRange.start(), 
-                    event.getWhen().start(), false));
-              }
-              if (currentRange.end() > event.getWhen().end() && 
-                  currentRange.end() - event.getWhen().end() >= request.getDuration()) {
-                meetingTimes.add(currentRange.fromStartEnd(event.getWhen().end(), 
-                    currentRange.end(), false));
-              }
-            }
-          }
-        }
-      }
-    }
-    if (optionalGuests.isEmpty()) {
-      return meetingTimes;
-    }
+    RangeSet<Integer> possibleTimes = TreeRangeSet.create();
+    possibleTimes.add(Range.closedOpen(0, 24 * 60));
+    // ADD CAST TO RangeSet<Integer>
+    possibleTimes.removeAll((RangeSet<Integer>)
+        events.stream()
+            .filter(event -> !Collections.disjoint(event.getAttendees(), attendees))
+            .map(FindMeetingQuery::eventToRange)
+            // ADD SPECIALIZATION TO <Integer> FOR create METHOD
+            .collect(TreeRangeSet::<Integer>create,
+                TreeRangeSet::add,
+                TreeRangeSet::addAll));
+    return possibleTimes.asRanges()
+        .stream()
+        .filter(time -> time.upperEndpoint() - time.lowerEndpoint() >= request.getDuration())
+        .map(FindMeetingQuery::rangeToTimeRange)
+        .collect(Collectors.toList());
 
-    // Add optional guests
-    List<TimeRange> optionalMeetingTimes = new ArrayList<TimeRange>();
-    for (int i = 0; i < meetingTimes.size(); i++) {
-      optionalMeetingTimes.add(meetingTimes.get(i).fromStartDuration(meetingTimes.get(i).start(), 
-          meetingTimes.get(i).duration()));
+    // TODO: Add optional guests
+  }
+
+  // helper function converts an Event to a Guava Range
+  private static Range<Integer> eventToRange(Event event) {
+    Range<Integer> range;
+    if (event.getWhen().end() != TimeRange.END_OF_DAY) {
+      range = Range.closedOpen(event.getWhen().start(), event.getWhen().end());
+    } else {
+      range = Range.closed(event.getWhen().start(), TimeRange.END_OF_DAY);
     }
-    for (Event event : events) {
-      for (String name : optionalGuests) {
-        if (event.getAttendees().contains(name)) {
-          // splits the person's remaining available times
-          // remove the chunk(s) that are unavailable
-          int i = 0;
-          while (i < optionalMeetingTimes.size()) {
-            if (event.getWhen().overlaps(optionalMeetingTimes.get(i))) {
-              TimeRange currentRange = optionalMeetingTimes.get(i);
-              optionalMeetingTimes.remove(i);
-              // add the new split time slots
-              if (currentRange.start() < event.getWhen().start() && 
-                  event.getWhen().start() - currentRange.start() >= request.getDuration()) {
-                optionalMeetingTimes.add(currentRange.fromStartEnd(currentRange.start(), 
-                    event.getWhen().start(), false));
-              }
-              if (currentRange.end() > event.getWhen().end() && 
-                  currentRange.end() - event.getWhen().end() >= request.getDuration()) {
-                optionalMeetingTimes.add(currentRange.fromStartEnd(event.getWhen().end(), 
-                    currentRange.end(), false));
-              }
-              i = 0;
-            } else {
-              i++;
-            }
-          }
-        }
-      }
+    System.out.println("Range is " + range.toString());
+    return range;
+  }
+
+  // helper function converts a Guava Range to a TimeRange
+  private static TimeRange rangeToTimeRange(Range<Integer> range) {
+    TimeRange timeRange;
+    if (range.upperBoundType() == BoundType.OPEN) {
+      timeRange = TimeRange.fromStartEnd(range.lowerEndpoint(), range.upperEndpoint(), false);
+    } else {
+      timeRange = TimeRange.fromStartEnd(range.lowerEndpoint(), TimeRange.END_OF_DAY, true);
     }
-    // TODO: simplify with helper functions
-    // TODO: Refactor with streams
-    if (!optionalMeetingTimes.isEmpty() || attendees.isEmpty()) {
-      return optionalMeetingTimes;
-    }
-    return meetingTimes;
+    return timeRange;
   }
 }
