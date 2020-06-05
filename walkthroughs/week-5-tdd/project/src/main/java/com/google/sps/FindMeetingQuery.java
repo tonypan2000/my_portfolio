@@ -18,13 +18,14 @@ import java.util.Collection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-// import java.util.stream.*; 
 
 public final class FindMeetingQuery {
   public Collection<TimeRange> query(Collection<Event> events, MeetingRequest request) {
     // Base cases that should return default results
     // if there is no attendee, return the whole day as available
-    if (request.getAttendees().isEmpty()) {
+    Collection<String> attendees = request.getAttendees();
+    Collection<String> optionalGuests = request.getOptionalAttendees();
+    if (attendees.isEmpty() && optionalGuests.isEmpty()) {
       return Arrays.asList(TimeRange.WHOLE_DAY);
     }
     // if the meeting request duration is longer than a day return no option
@@ -32,11 +33,9 @@ public final class FindMeetingQuery {
       return Arrays.asList();
     }
 
-    // excluding optional guests
     List<TimeRange> meetingTimes = new ArrayList<TimeRange>();
     // schedule for one attendee, the person initially starts free all day
     meetingTimes.add(TimeRange.WHOLE_DAY);
-    Collection<String> attendees = request.getAttendees();
     // go through every event, mark each event the person's involved with 
     for (Event event : events) {
       for (String name : attendees) {
@@ -48,19 +47,65 @@ public final class FindMeetingQuery {
               TimeRange currentRange = meetingTimes.get(i);
               meetingTimes.remove(i);
               // add the new split time slots
-              if (currentRange.start() < event.getWhen().start() && event.getWhen().start() - currentRange.start() >= request.getDuration()) {
-                meetingTimes.add(currentRange.fromStartEnd(currentRange.start(), event.getWhen().start(), false));
+              if (currentRange.start() < event.getWhen().start() && 
+                  event.getWhen().start() - currentRange.start() >= request.getDuration()) {
+                meetingTimes.add(currentRange.fromStartEnd(currentRange.start(), 
+                    event.getWhen().start(), false));
               }
-              if (currentRange.end() > event.getWhen().end() && currentRange.end() - event.getWhen().end() >= request.getDuration()) {
-                meetingTimes.add(currentRange.fromStartEnd(event.getWhen().end(), currentRange.end(), false));
+              if (currentRange.end() > event.getWhen().end() && 
+                  currentRange.end() - event.getWhen().end() >= request.getDuration()) {
+                meetingTimes.add(currentRange.fromStartEnd(event.getWhen().end(), 
+                    currentRange.end(), false));
               }
             }
           }
         }
       }
     }
-    // TODO: Add optional guests
+    if (optionalGuests.isEmpty()) {
+      return meetingTimes;
+    }
+
+    // Add optional guests
+    List<TimeRange> optionalMeetingTimes = new ArrayList<TimeRange>();
+    for (int i = 0; i < meetingTimes.size(); i++) {
+      optionalMeetingTimes.add(meetingTimes.get(i).fromStartDuration(meetingTimes.get(i).start(), 
+          meetingTimes.get(i).duration()));
+    }
+    for (Event event : events) {
+      for (String name : optionalGuests) {
+        if (event.getAttendees().contains(name)) {
+          // splits the person's remaining available times
+          // remove the chunk(s) that are unavailable
+          int i = 0;
+          while (i < optionalMeetingTimes.size()) {
+            if (event.getWhen().overlaps(optionalMeetingTimes.get(i))) {
+              TimeRange currentRange = optionalMeetingTimes.get(i);
+              optionalMeetingTimes.remove(i);
+              // add the new split time slots
+              if (currentRange.start() < event.getWhen().start() && 
+                  event.getWhen().start() - currentRange.start() >= request.getDuration()) {
+                optionalMeetingTimes.add(currentRange.fromStartEnd(currentRange.start(), 
+                    event.getWhen().start(), false));
+              }
+              if (currentRange.end() > event.getWhen().end() && 
+                  currentRange.end() - event.getWhen().end() >= request.getDuration()) {
+                optionalMeetingTimes.add(currentRange.fromStartEnd(event.getWhen().end(), 
+                    currentRange.end(), false));
+              }
+              i = 0;
+            } else {
+              i++;
+            }
+          }
+        }
+      }
+    }
+    // TODO: simplify with helper functions
     // TODO: Refactor with streams
+    if (!optionalMeetingTimes.isEmpty() || attendees.isEmpty()) {
+      return optionalMeetingTimes;
+    }
     return meetingTimes;
   }
 }
