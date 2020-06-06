@@ -41,6 +41,50 @@ public final class FindMeetingQuery {
 
     RangeSet<Integer> possibleTimes = TreeRangeSet.create();
     possibleTimes.add(Range.closedOpen(0, 24 * 60));
+    List<TimeRange> meetingTimes = findSchedule(possibleTimes, events, attendees, request);
+    if (optionalGuests.isEmpty()) {
+      return meetingTimes;
+    }
+
+    // Add optional guests
+    // TODO: Use stream to make a deep copy
+    List<TimeRange> optionalMeetingTimes = new ArrayList<TimeRange>();
+    for (int i = 0; i < meetingTimes.size(); i++) {
+      optionalMeetingTimes.add(meetingTimes.get(i).fromStartDuration(meetingTimes.get(i).start(), 
+          meetingTimes.get(i).duration()));
+    }
+    optionalMeetingTimes = findSchedule(possibleTimes, events, optionalGuests, request);
+    if (!optionalMeetingTimes.isEmpty() || attendees.isEmpty()) {
+      return optionalMeetingTimes;
+    }
+    return meetingTimes;
+  }
+
+  // helper function converts an Event to a Guava Range
+  private static Range<Integer> eventToRange(Event event) {
+    Range<Integer> range;
+    if (event.getWhen().end() != TimeRange.END_OF_DAY) {
+      range = Range.closedOpen(event.getWhen().start(), event.getWhen().end());
+    } else {
+      range = Range.closed(event.getWhen().start(), TimeRange.END_OF_DAY);
+    }
+    return range;
+  }
+
+  // helper function converts a Guava Range to a TimeRange
+  private static TimeRange rangeToTimeRange(Range<Integer> range) {
+    TimeRange timeRange;
+    if (range.upperBoundType() == BoundType.OPEN) {
+      timeRange = TimeRange.fromStartEnd(range.lowerEndpoint(), range.upperEndpoint(), false);
+    } else {
+      timeRange = TimeRange.fromStartEnd(range.lowerEndpoint(), TimeRange.END_OF_DAY, true);
+    }
+    return timeRange;
+  }
+
+  // helper function that finds the available time slots with streams
+  private static List<TimeRange> findSchedule(RangeSet<Integer> possibleTimes, 
+      Collection<Event> events, Collection<String> attendees, MeetingRequest request) {
     // ADD CAST TO RangeSet<Integer>
     possibleTimes.removeAll((RangeSet<Integer>)
         events.stream()
@@ -55,30 +99,5 @@ public final class FindMeetingQuery {
         .filter(time -> time.upperEndpoint() - time.lowerEndpoint() >= request.getDuration())
         .map(FindMeetingQuery::rangeToTimeRange)
         .collect(Collectors.toList());
-
-    // TODO: Add optional guests
-  }
-
-  // helper function converts an Event to a Guava Range
-  private static Range<Integer> eventToRange(Event event) {
-    Range<Integer> range;
-    if (event.getWhen().end() != TimeRange.END_OF_DAY) {
-      range = Range.closedOpen(event.getWhen().start(), event.getWhen().end());
-    } else {
-      range = Range.closed(event.getWhen().start(), TimeRange.END_OF_DAY);
-    }
-    System.out.println("Range is " + range.toString());
-    return range;
-  }
-
-  // helper function converts a Guava Range to a TimeRange
-  private static TimeRange rangeToTimeRange(Range<Integer> range) {
-    TimeRange timeRange;
-    if (range.upperBoundType() == BoundType.OPEN) {
-      timeRange = TimeRange.fromStartEnd(range.lowerEndpoint(), range.upperEndpoint(), false);
-    } else {
-      timeRange = TimeRange.fromStartEnd(range.lowerEndpoint(), TimeRange.END_OF_DAY, true);
-    }
-    return timeRange;
   }
 }
