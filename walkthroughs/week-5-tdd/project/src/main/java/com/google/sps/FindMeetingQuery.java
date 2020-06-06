@@ -40,6 +40,7 @@ public final class FindMeetingQuery {
     }
 
     RangeSet<Integer> possibleTimes = TreeRangeSet.create();
+    List<TimeRange> meetingTimes = new ArrayList<TimeRange>();
     possibleTimes.add(Range.closedOpen(0, 24 * 60));
     // ADD CAST TO RangeSet<Integer>
     possibleTimes.removeAll((RangeSet<Integer>)
@@ -50,13 +51,40 @@ public final class FindMeetingQuery {
             .collect(TreeRangeSet::<Integer>create,
                 TreeRangeSet::add,
                 TreeRangeSet::addAll));
-    return possibleTimes.asRanges()
+    meetingTimes = possibleTimes.asRanges()
         .stream()
         .filter(time -> time.upperEndpoint() - time.lowerEndpoint() >= request.getDuration())
         .map(FindMeetingQuery::rangeToTimeRange)
         .collect(Collectors.toList());
+    if (optionalGuests.isEmpty()) {
+      return meetingTimes;
+    }
 
-    // TODO: Add optional guests
+    // Add optional guests
+    // TODO: Use stream to make a deep copy
+    List<TimeRange> optionalMeetingTimes = new ArrayList<TimeRange>();
+    for (int i = 0; i < meetingTimes.size(); i++) {
+      optionalMeetingTimes.add(meetingTimes.get(i).fromStartDuration(meetingTimes.get(i).start(), 
+          meetingTimes.get(i).duration()));
+    }
+    // ADD CAST TO RangeSet<Integer>
+    possibleTimes.removeAll((RangeSet<Integer>)
+        events.stream()
+            .filter(event -> !Collections.disjoint(event.getAttendees(), optionalGuests))
+            .map(FindMeetingQuery::eventToRange)
+            // ADD SPECIALIZATION TO <Integer> FOR create METHOD
+            .collect(TreeRangeSet::<Integer>create,
+                TreeRangeSet::add,
+                TreeRangeSet::addAll));
+    optionalMeetingTimes = possibleTimes.asRanges()
+        .stream()
+        .filter(time -> time.upperEndpoint() - time.lowerEndpoint() >= request.getDuration())
+        .map(FindMeetingQuery::rangeToTimeRange)
+        .collect(Collectors.toList());
+    if (!optionalMeetingTimes.isEmpty() || attendees.isEmpty()) {
+      return optionalMeetingTimes;
+    }
+    return meetingTimes;
   }
 
   // helper function converts an Event to a Guava Range
@@ -67,7 +95,6 @@ public final class FindMeetingQuery {
     } else {
       range = Range.closed(event.getWhen().start(), TimeRange.END_OF_DAY);
     }
-    System.out.println("Range is " + range.toString());
     return range;
   }
 
