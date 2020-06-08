@@ -47,15 +47,35 @@ public final class FindMeetingQuery {
     }
 
     // Add optional guests
-    // TODO: Use stream to make a deep copy
-    List<TimeRange> optionalMeetingTimes = new ArrayList<TimeRange>();
-    for (int i = 0; i < meetingTimes.size(); i++) {
-      optionalMeetingTimes.add(meetingTimes.get(i).fromStartDuration(meetingTimes.get(i).start(), 
-          meetingTimes.get(i).duration()));
-    }
-    optionalMeetingTimes = findSchedule(possibleTimes, events, optionalGuests, request);
-    if (!optionalMeetingTimes.isEmpty() || attendees.isEmpty()) {
+    List<TimeRange> optionalMeetingTimes = copyListTimeRnage(meetingTimes);
+    optionalMeetingTimes = findSchedule(timeRangeToRangeSet(meetingTimes), events, optionalGuests, request);
+    if (!optionalMeetingTimes.isEmpty()) {
       return optionalMeetingTimes;
+    }
+
+    // find most optional guests that can attend
+    if (optionalMeetingTimes.isEmpty()) {
+      int n = optionalGuests.size(); 
+      List<List<TimeRange>> subsetsOptionalTimes = new ArrayList<List<TimeRange>>();
+      for (int i = 0; i < (1<<n); i++) {   
+        // current subset 
+        List<String> subsetOptionalAttendees = new ArrayList<String>();
+        for (int j = 0; j < n; j++) {
+          if ((i & (1 << j)) > 0) {
+            subsetOptionalAttendees.add((String) optionalGuests.toArray()[j]);
+          }
+        }
+        List<TimeRange> subsetOptionalMeetingTime = copyListTimeRnage(meetingTimes);
+        subsetOptionalMeetingTime = findSchedule(timeRangeToRangeSet(meetingTimes), events, subsetOptionalAttendees, request);
+        if (!subsetOptionalMeetingTime.isEmpty()) {
+          subsetsOptionalTimes.add(subsetOptionalMeetingTime);
+        } else {
+          break;
+        }
+      } 
+      if (!subsetsOptionalTimes.isEmpty()) {
+        return subsetsOptionalTimes.get(subsetsOptionalTimes.size() - 1);
+      }
     }
     return meetingTimes;
   }
@@ -80,6 +100,30 @@ public final class FindMeetingQuery {
       timeRange = TimeRange.fromStartEnd(range.lowerEndpoint(), TimeRange.END_OF_DAY, true);
     }
     return timeRange;
+  }
+
+  // helper function converting an ArrayList of TimeRange to a RangeSet of Integer
+  private static RangeSet<Integer> timeRangeToRangeSet(List<TimeRange> meetingTimes) {
+    RangeSet<Integer> timeRangeSet = TreeRangeSet.create();
+    for (TimeRange time : meetingTimes) {
+      if (time.end() != TimeRange.END_OF_DAY) {
+        timeRangeSet.add(Range.closedOpen(time.start(), time.end()));
+      } else {
+        timeRangeSet.add(Range.closed(time.start(), TimeRange.END_OF_DAY));
+      }   
+    }
+    return timeRangeSet;
+  }
+
+  // helper function that makes a deep copy of an ArrayList of TimeRanges
+  private static List<TimeRange> copyListTimeRnage(List<TimeRange> meetingTimes) {
+    // TODO: Use stream to make a deep copy
+    List<TimeRange> optionalMeetingTimes = new ArrayList<TimeRange>();
+    for (int i = 0; i < meetingTimes.size(); i++) {
+      optionalMeetingTimes.add(meetingTimes.get(i).fromStartDuration(meetingTimes.get(i).start(), 
+          meetingTimes.get(i).duration()));
+    }
+    return optionalMeetingTimes;
   }
 
   // helper function that finds the available time slots with streams
