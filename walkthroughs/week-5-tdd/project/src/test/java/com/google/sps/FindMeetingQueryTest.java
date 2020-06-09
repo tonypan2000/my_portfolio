@@ -404,9 +404,9 @@ public final class FindMeetingQueryTest {
     // Have one person, but make it so that there is not enough room at any point in the day to
     // have the meeting. Only one optional attendee can attend.
     //
-    // Events  : |--A-----| |-----B----|
+    // Events  : |---A----| |-----B----|
     // Day     : |---------------------|
-    // Options :
+    // Options :          |-----1------|
 
     Collection<Event> events = Arrays.asList(
         new Event("Event 1", TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0830AM, false),
@@ -419,7 +419,7 @@ public final class FindMeetingQueryTest {
     request.addOptionalAttendee(PERSON_B);
 
     Collection<TimeRange> actual = query.query(events, request);
-    Collection<TimeRange> expected = Arrays.asList(TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0900AM, false));
+    Collection<TimeRange> expected = Arrays.asList(TimeRange.fromStartEnd(TIME_0830AM, TimeRange.END_OF_DAY, true));
 
     Assert.assertEquals(expected, actual);
   }
@@ -459,12 +459,12 @@ public final class FindMeetingQueryTest {
   }
 
   @Test
-  public void overlappingEventsMostOptional() {
+  public void mostOptionalEventsInALine() {
     // Have an event for each person, but have their events overlap. We should only see two options.
     //
     // Optional: |--A--|--B--|--C--|--D--|--E--|--F--|
     // Day     : |-----------------------------------|
-    // Options :       |--1--|
+    // Options :                               |--1--|
 
     Collection<Event> events = Arrays.asList(
         new Event("Event 1", TimeRange.fromStartDuration(TimeRange.START_OF_DAY, DURATION_4_HOUR),
@@ -491,20 +491,21 @@ public final class FindMeetingQueryTest {
 
     Collection<TimeRange> actual = query.query(events, request);
     Collection<TimeRange> expected =
-        Arrays.asList(TimeRange.fromStartEnd(TIME_0400AM, TIME_0800AM, false));
+        Arrays.asList(TimeRange.fromStartEnd(TIME_0800PM, TimeRange.END_OF_DAY, true));
 
     Assert.assertEquals(expected, actual);
   }
 
   @Test
-  public void mostOptionalEventsInALine() {
+  public void overlappingEventsMostOptional() {
     // Have an event for each person, but have their events overlap. We should only see two options.
     //
     // Events  :       |--A--|
     // Optional: |--B--|   |--B--|
     // Optional:                 |--C--|
     // Day     : |---------------------|
-    // Options : |--1--|         |--2--|
+    // Options : |--1--|     |-2-|        // ignores person B
+    // Options :                 |--3--|  // ignores person C but also valid
 
     Collection<Event> events = Arrays.asList(
         new Event("Event 1", TimeRange.fromStartDuration(TIME_0830AM, DURATION_60_MINUTES),
@@ -524,8 +525,7 @@ public final class FindMeetingQueryTest {
 
     Collection<TimeRange> actual = query.query(events, request);
     Collection<TimeRange> expected =
-        Arrays.asList(TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0830AM, false),
-            TimeRange.fromStartEnd(TIME_0930AM, TIME_1000AM, false));
+        Arrays.asList(TimeRange.fromStartEnd(TIME_1000AM, TimeRange.END_OF_DAY, true));
 
     Assert.assertEquals(expected, actual);
   }
