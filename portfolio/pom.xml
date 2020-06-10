@@ -59,7 +59,7 @@
         <version>2.2.0</version>
         <configuration>
           <!-- my project ID. -->
-          <deploy.projectId>tonympan-step-2020</deploy.projectId>
+          <deploy.projectId>tonympan-step-2020-june-9</deploy.projectId>
           <deploy.version>1</deploy.version>
         </configuration>
       </plugin>
