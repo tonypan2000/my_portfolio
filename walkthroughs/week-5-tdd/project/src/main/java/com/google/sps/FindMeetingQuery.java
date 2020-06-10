@@ -41,15 +41,10 @@ public final class FindMeetingQuery {
     // Change the signature of findSchedule to return a RangeSet.
     RangeSet<Integer> possibleTimes = findSchedule(allDay, events, request.getAttendees(), request);
 
-    Collection<String> optionalAttendees = request.getOptionalAttendees();
-    if (optionalAttendees.isEmpty()) {
-      return rangeSetToTimeRangeList(possibleTimes);
-    }
-
     // 2. Get a stream of all subsets sorted by descending cardinality.
-    return allSubsetsDescending(optionalAttendees)
+    return allSubsetsDescending(request.getOptionalAttendees())
       // 3. Find the possible times for a given subset.
-      .map(subsetOfOptionalAttendees -> findSchedule(possibleTimes, events, subsetOfOptionalAttendees, request))
+      .map(optionalAttendees -> findSchedule(TreeRangeSet.create(possibleTimes), events, optionalAttendees, request))
       // 4. Filter out empty schedules due to impossible subsets.
       .filter(Predicates.not(RangeSet::isEmpty))
       // 5. Convert back to the desired output format.
@@ -127,10 +122,10 @@ public final class FindMeetingQuery {
   // helper function uses streams to build a power set
   private static Stream<Set<String>> allSubsetsDescending(Collection<String> optionalAttendees) {
     Set<String> attendeeSet = Sets.newHashSet(optionalAttendees);
-    return IntStream.range(0, attendeeSet.size())
+    return IntStream.rangeClosed(0, attendeeSet.size())
         .boxed() // Converts Intstream to Stream<Integer>
         .sorted(Collections.reverseOrder())
 				.flatMap(cardinality ->
-            Stream.concat(Stream.of(Sets.combinations(attendeeSet, cardinality)), Stream.of(Collections.<String>emptySet())));
+            Sets.combinations(attendeeSet, cardinality).stream());
   }
 }

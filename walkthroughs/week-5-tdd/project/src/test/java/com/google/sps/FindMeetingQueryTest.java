@@ -481,7 +481,7 @@ public final class FindMeetingQueryTest {
             Arrays.asList(PERSON_F)));
 
     MeetingRequest request =
-        new MeetingRequest(Arrays.asList(PERSON_A), DURATION_30_MINUTES);
+        new MeetingRequest(NO_ATTENDEES, DURATION_30_MINUTES);
     request.addOptionalAttendee(PERSON_A);
     request.addOptionalAttendee(PERSON_B);
     request.addOptionalAttendee(PERSON_C);
